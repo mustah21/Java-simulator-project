@@ -1,0 +1,177 @@
+/* Base colors */
+.root-pane {
+    -fx-background-color: #F5F7FB;
+    -fx-font-family: "Inter", "Segoe UI", "System";
+}
+
+/* Top bar */
+.top-bar {
+    -fx-background-color: linear-gradient(to right, rgba(76,124,255,0.12), rgba(76,124,255,0.06));
+    -fx-border-color: transparent;
+    -fx-alignment: center-left;
+    -fx-padding: 10px 18px;
+}
+
+.app-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #0B1A3A;
+    -fx-padding: 0 6 0 6;
+}
+
+/* Sidebar */
+.sidebar-scroll {
+    -fx-background: transparent;
+    -fx-border-color: transparent;
+}
+
+.sidebar {
+    -fx-background-color: transparent;
+}
+
+.section-title {
+    -fx-font-size: 13px;
+    -fx-text-fill: #0B1A3A;
+    -fx-font-weight: 600;
+    -fx-padding: 6 0 4 0;
+}
+
+/* Cards and panels */
+.panel-card {
+    -fx-background-color: white;
+    -fx-background-insets: 0;
+    -fx-effect: dropshadow(gaussian, rgba(11,26,58,0.06), 8, 0.0, 0, 2);
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 8;
+}
+
+/* Buttons */
+.primary-button {
+    -fx-background-color: #4C7EFF;
+    -fx-text-fill: white;
+    -fx-padding: 8 14 8 14;
+    -fx-background-radius: 10;
+    -fx-font-weight: 600;
+}
+
+.secondary-button {
+    -fx-background-color: transparent;
+    -fx-border-color: rgba(11,26,58,0.08);
+    -fx-text-fill: #0B1A3A;
+    -fx-padding: 6 12 6 12;
+    -fx-background-radius: 10;
+}
+
+.ghost-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #4C7EFF;
+    -fx-border-color: transparent;
+    -fx-padding: 6 12 6 12;
+}
+
+/* Canvas */
+.canvas {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 12;
+}
+
+/* Station cards (on canvas) */
+.station-card {
+    -fx-background-color: white;
+    -fx-background-radius: 8;
+    -fx-effect: dropshadow(gaussian, rgba(11,26,58,0.06), 8, 0.0, 0, 4);
+    -fx-padding: 12 10 12 10;
+}
+
+.station-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #0B1A3A;
+}
+
+.station-sub {
+    -fx-font-size: 11px;
+    -fx-text-fill: #5B6B87;
+}
+
+.small-muted {
+    -fx-font-size: 10px;
+    -fx-text-fill: #8A96AD;
+}
+
+/* Metric cards */
+.metric-card {
+    -fx-background-color: white;
+    -fx-background-radius: 8;
+    -fx-padding: 10;
+    -fx-effect: dropshadow(gaussian, rgba(11,26,58,0.04), 6, 0.0, 0, 3);
+}
+
+.metric-title {
+    -fx-font-size: 11px;
+    -fx-text-fill: #5B6B87;
+}
+
+.metric-value {
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+}
+
+/* Small headings */
+.small-heading {
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #0B1A3A;
+    -fx-padding: 6 0 2 0;
+}
+
+/* Flow line style */
+.flow-line {
+    -fx-stroke: rgba(11,26,58,0.12);
+    -fx-stroke-width: 2;
+}
+
+/* Divider */
+.divider {
+    -fx-fill: linear-gradient(to right, #e9eefb, #ffffff);
+    -fx-opacity: 0.9;
+}
+
+/* TitledPane tweaks */
+.titled-pane > .title {
+    -fx-background-color: transparent;
+    -fx-font-weight: 600;
+}
+
+/* ScrollPane styling */
+.scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+
+/* ToggleButton */
+.toggle-button {
+    -fx-background-radius: 6;
+}
+
+/* TextField */
+.text-field {
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-background-color: white;
+    -fx-border-color: rgba(11,26,58,0.06);
+    -fx-padding: 6 8 6 8;
+}
+
+/* Charts */
+.chart-plot-background {
+    -fx-background-color: linear-gradient(to bottom, rgba(255,255,255,0.9), rgba(245,247,251,0.9));
+}
+
+/* Responsive tweaks */
+@media screen and (max-width: 900px) {
+    .root-pane {
+        -fx-font-size: 12px;
+    }
+}
