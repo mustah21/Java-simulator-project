@@ -1,26 +1,14 @@
 package view;
 
 import java.io.IOException;
-import java.text.DecimalFormat;
-import controller.*;
+import controller.Controller;
+import controller.IControllerVtoM;
 import javafx.application.Application;
-import javafx.application.Platform;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 import simu.framework.Trace;
 import simu.framework.Trace.Level;
-import javafx.scene.*;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
-import javafx.scene.text.*;
-
-import java.text.DecimalFormat;
 
 public class SimulatorGUI extends Application implements ISimulatorUI {
 
@@ -34,22 +22,25 @@ public class SimulatorGUI extends Application implements ISimulatorUI {
 	@Override
 	public void init() {
 		Trace.setTraceLevel(Level.INFO);
-		controller = new Controller(this);
+		controller = new Controller();
 	}
 
 	@Override
 	public void start(Stage primaryStage) throws IOException {
 		// UI creation
         try{
+            loader = new FXMLLoader(getClass().getResource("/SimulatorUI.fxml"));
+            loader.setController(controller);
 
-            loader = new FXMLLoader(getClass().getResource("/simulatorUI.fxml"));
-        loader.setController(controller);
-
-        Scene scene = new Scene(loader.load());
-        primaryStage.setScene(scene);
-        primaryStage.setTitle("Simulator");
-        primaryStage.setResizable(false);
-        primaryStage.show();
+            Scene scene = new Scene(loader.load());
+            
+            // Set the UI reference in the controller after loading
+            ((Controller) controller).setUI(this);
+            
+            primaryStage.setScene(scene);
+            primaryStage.setTitle("Simulator");
+            primaryStage.setResizable(false);
+            primaryStage.show();
         }catch(Exception e){
             e.printStackTrace();
         }
@@ -72,7 +63,6 @@ public class SimulatorGUI extends Application implements ISimulatorUI {
 
 	@Override
 	public void setEndingTime(double time) {
-		 DecimalFormat formatter = new DecimalFormat("#0.00");
 //		 this.results.setText(formatter.format(time));
 //        TODO: Adapt to new UI
 	}
