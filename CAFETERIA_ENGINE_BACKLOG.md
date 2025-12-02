@@ -47,7 +47,7 @@ This backlog outlines the implementation tasks for transforming the generic 3-st
 
 ### 2.1 Enhance Customer Class
 
-- [ ] **Task**: Extend `Customer.java` with cafeteria-specific attributes
+- [ Mustafa ] **Task**: Extend `Customer.java` with cafeteria-specific attributes
   - `mealChoice`: Enum (GRILL, VEGAN, NORMAL) - randomly assigned on arrival
   - `paymentChoice`: Enum (CASHIER, SELF_SERVICE) - based on availability/preference
   - `wantsCoffee`: boolean - randomly assigned (e.g., 30% probability)
@@ -58,7 +58,7 @@ This backlog outlines the implementation tasks for transforming the generic 3-st
 
 ### 2.2 Implement Customer Decision Logic
 
-- [ ] **Task**: Add methods for customer choices
+- [ Mustafa ] **Task**: Add methods for customer choices
   - `chooseMealStation()`: Random selection weighted by preferences
   - `choosePaymentMethod()`: Prefer self-service if enabled and shorter queue, else cashier
   - `decideCoffee()`: Random decision based on probability
@@ -66,7 +66,7 @@ This backlog outlines the implementation tasks for transforming the generic 3-st
 
 ### 2.3 Customer Routing Logic
 
-- [ ] **Task**: Implement customer flow through cafeteria
+- [ Mustafa ] **Task**: Implement customer flow through cafeteria
   - Route customer to chosen meal station
   - After meal, route to payment (cashier or self-service based on choice/availability)
   - After payment, route to coffee if wanted and enabled
