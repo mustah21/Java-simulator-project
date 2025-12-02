@@ -81,7 +81,7 @@ This backlog outlines the implementation tasks for transforming the generic 3-st
 
 ### 3.1 Meal Station Service Points
 
-- [ ] **Task**: Create/configure meal station service points
+- [ Tanvir ] **Task**: Create/configure meal station service points
   - **Grill Station**: Configurable service time (default 45s)
   - **Vegan Station**: Configurable service time (default 40s)
   - **Normal Station**: Configurable service time (default 30s)
@@ -91,7 +91,7 @@ This backlog outlines the implementation tasks for transforming the generic 3-st
 
 ### 3.2 Payment Service Points
 
-- [ ] **Task**: Implement payment stations
+- [Tanvir ] **Task**: Implement payment stations
   - **Cashier Station**: Configurable service time (default 20s), always available
   - **Self-Service Station**: Configurable service time (default 12s), can be enabled/disabled
   - Customers choose based on queue length and availability
@@ -100,7 +100,7 @@ This backlog outlines the implementation tasks for transforming the generic 3-st
 
 ### 3.3 Coffee Station Service Point
 
-- [ ] **Task**: Implement optional coffee station
+- [ Tanvir] **Task**: Implement optional coffee station
   - Configurable service time (default 10s)
   - Can be enabled/disabled via UI
   - Only customers who want coffee visit this station
