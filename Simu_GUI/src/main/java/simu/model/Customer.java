@@ -3,6 +3,10 @@ package simu.model;
 import simu.framework.Clock;
 import simu.framework.Trace;
 
+import java.util.EnumMap;
+import java.util.Map;
+import java.util.Random;
+
 
 // TODO:
 // Customer to be implemented according to the requirements of the simulation model (data!)
@@ -12,15 +16,59 @@ public class Customer {
 	private int id;
 	private static int i = 1;
 	private static long sum = 0;
-	
-	public Customer() {
+
+    private static final Random rand = new Random();
+	private MealType mealType;
+    private PaymentType paymentType;
+    private boolean wantsCoffee;
+
+
+    private Map<ServicePointType, Double> waitTimes = new EnumMap<>(ServicePointType.class);
+    private Map<ServicePointType, Double> serviceStartTimes = new EnumMap<>(ServicePointType.class);
+    private Map<ServicePointType, Double> serviceEndTimes = new EnumMap<>(ServicePointType.class);
+
+
+    public Customer() {
 	    id = i++;
 	    
 		arrivalTime = Clock.getInstance().getTime();
 		Trace.out(Trace.Level.INFO, "New customer #" + id + " arrived at  " + arrivalTime);
+        mealType = assignMealType();
+        paymentType = assignPaymentType();
+        wantsCoffee = assignCoffeeDecision();
 	}
 
-	public double getRemovalTime() {
+    public void markServiceStart(ServicePointType type, double time) {
+        serviceStartTimes.put(type, time);
+    }
+    public void markServiceEnd(ServicePointType type, double time) {
+        serviceEndTimes.put(type, time);
+    }
+    public void addWaitTime(ServicePointType type, double time) {
+        waitTimes.put(type, time);
+    }
+
+    public MealType assignMealType() {
+        int r = rand.nextInt(100);
+        if (r < 30) return MealType.GRILL;
+        if (r < 60) return MealType.VEGAN;
+        return MealType.NORMAL;
+    }
+
+    public PaymentType assignPaymentType() {
+        int r = rand.nextInt(100);
+        return r < 60 ? PaymentType.SELF_SERVICE : PaymentType.CASHIER;
+    }
+
+    public boolean assignCoffeeDecision() {
+        return rand.nextDouble() < 0.30;
+    }
+
+
+    /* Unchanged methods */
+
+
+    public double getRemovalTime() {
 		return removalTime;
 	}
 
@@ -46,5 +94,6 @@ public class Customer {
 		double mean = sum/id;
 		System.out.println("Current mean of the customer service times " + mean);
 	}
+
 
 }
