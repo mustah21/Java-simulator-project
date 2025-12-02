@@ -48,23 +48,36 @@ public class Customer {
         waitTimes.put(type, time);
     }
 
-    public MealType assignMealType() {
+    private MealType assignMealType() {
         int r = rand.nextInt(100);
         if (r < 30) return MealType.GRILL;
         if (r < 60) return MealType.VEGAN;
         return MealType.NORMAL;
     }
 
-    public PaymentType assignPaymentType() {
+
+    private PaymentType assignPaymentType() {
         int r = rand.nextInt(100);
         return r < 60 ? PaymentType.SELF_SERVICE : PaymentType.CASHIER;
     }
 
-    public boolean assignCoffeeDecision() {
+    private boolean assignCoffeeDecision() {
         return rand.nextDouble() < 0.30;
     }
+    public boolean isWantsCoffee() {
+        if (assignCoffeeDecision()) {
+            wantsCoffee = true;
+        }
+        return wantsCoffee = false;
+    }
 
+    public MealType getMealType() {
+        return mealType;
+    }
 
+    public PaymentType getPaymentType() {
+        return paymentType;
+    }
     /* Unchanged methods */
 
 
