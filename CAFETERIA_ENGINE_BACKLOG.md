@@ -10,9 +10,9 @@ This backlog outlines the implementation tasks for transforming the generic 3-st
 
 **Priority: HIGH** | **Status: Not Started**
 
-### 1.1 Extend Event Types
+### 1.1 Extend Event Types 
 
-- [ ] **Task**: Add new event types to `EventType.java`
+- [ Minh] **Task**: Add new event types to `EventType.java`
   - `ARRIVAL` - Customer arrives at cafeteria
   - `MEAL_GRILL_DEP` - Departure from Grill station
   - `MEAL_VEGAN_DEP` - Departure from Vegan station
@@ -25,7 +25,7 @@ This backlog outlines the implementation tasks for transforming the generic 3-st
 
 ### 1.2 Create CafeteriaEngine Class
 
-- [ ] **Task**: Create `CafeteriaEngine.java` extending `Engine`
+- [ Minh] **Task**: Create `CafeteriaEngine.java` extending `Engine`
   - Replace `MyEngine` with cafeteria-specific implementation
   - Initialize all service points (3 meal stations, 2 payment options, 1 coffee)
   - Configure arrival process with configurable arrival rate
@@ -33,7 +33,7 @@ This backlog outlines the implementation tasks for transforming the generic 3-st
 
 ### 1.3 Implement Opening Hours Logic
 
-- [ ] **Task**: Add opening hours constraint to simulation
+- [Minh ] **Task**: Add opening hours constraint to simulation
   - Read opening hours from UI (convert to simulation time units)
   - Stop generating arrivals after opening hours end
   - Allow simulation to continue until all customers are served
