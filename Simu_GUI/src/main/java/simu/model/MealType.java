@@ -1,6 +1,8 @@
 package simu.model;
 
-public enum MealType {
+import simu.framework.IEventType;
+
+public enum MealType implements IEventType {
     GRILL,
     VEGAN,
     NORMAL,

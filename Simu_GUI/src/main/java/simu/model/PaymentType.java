@@ -1,6 +1,8 @@
 package simu.model;
 
-public enum PaymentType {
+import simu.framework.IEventType;
+
+public enum PaymentType implements IEventType {
     CASHIER,
     SELF_SERVICE,
 }
