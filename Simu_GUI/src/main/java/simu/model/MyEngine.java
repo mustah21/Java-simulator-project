@@ -30,11 +30,11 @@ public class MyEngine extends Engine {
 
         // These eventTypes are taken from chatgpt, will update them once Tanvir merges his code
 
-        grillStation = new ServicePoint(new Normal(45, 10), eventList, EventType.GRILL_DEP);
-        veganStation = new ServicePoint(new Normal(40, 8), eventList, EventType.VEGAN_DEP);
-        normalStation = new ServicePoint(new Normal(30, 5), eventList, EventType.NORMAL_DEP);
-        cashierStation = new ServicePoint(new Normal(20, 3), eventList, EventType.CASHIER_DEP);
-        selfServiceStation = new ServicePoint(new Normal(12, 2), eventList, EventType.SELF_DEP);
+        grillStation = new ServicePoint(new Normal(45, 10), eventList, EventType.MEAL_GRILL_DEP);
+        veganStation = new ServicePoint(new Normal(40, 8), eventList, EventType.MEAL_VEGAN_DEP);
+        normalStation = new ServicePoint(new Normal(30, 5), eventList, EventType.MEAL_NORMAL_DEP);
+        cashierStation = new ServicePoint(new Normal(20, 3), eventList, EventType.PAYMENT_CASHIER_DEP);
+        selfServiceStation = new ServicePoint(new Normal(12, 2), eventList, EventType.PAYMENT_SELF_DEP);
         coffeeStation = new ServicePoint(new Normal(10, 2), eventList, EventType.COFFEE_DEP);
 
         // Redundant: Originally were here will remove them soon
@@ -75,27 +75,27 @@ public class MyEngine extends Engine {
             controller.visualiseCustomer(); // keep this here idk chatgpt says to keep it here
             break;
 
-            case GRILL_DEP: {
+            case MEAL_GRILL_DEP: {
                 Customer customer = grillStation.removeQueue();
                 routeToPayment(customer);
                 break;
             }
-            case VEGAN_DEP: {
+            case MEAL_VEGAN_DEP: {
                 Customer customer = veganStation.removeQueue();
                 routeToPayment(customer);
                 break;
             }
-            case NORMAL_DEP: {
+            case MEAL_NORMAL_DEP: {
                 Customer customer = normalStation.removeQueue();
                 routeToPayment(customer);
                 break;
             }
-            case CASHIER: {
+            case PAYMENT_CASHIER_DEP: {
                 Customer customer = cashierStation.removeQueue();
                 routeAfterPayment(customer);
                 break;
             }
-            case SELF_SERVICE: {
+            case PAYMENT_SELF_DEP: {
                 Customer customer = selfServiceStation.removeQueue();
                 routeAfterPayment(customer);
                 break;
