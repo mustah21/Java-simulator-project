@@ -21,12 +21,12 @@
 
 /* Sidebar */
 .sidebar-scroll {
-    -fx-background: transparent;
+    -fx-background: white;
     -fx-border-color: transparent;
 }
 
 .sidebar {
-    -fx-background-color: transparent;
+    -fx-background-color: white;
 }
 
 .section-title {

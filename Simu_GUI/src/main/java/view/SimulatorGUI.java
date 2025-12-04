@@ -6,6 +6,7 @@ import controller.IControllerVtoM;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import simu.framework.Trace;
 import simu.framework.Trace.Level;
@@ -33,7 +34,7 @@ public class SimulatorGUI extends Application implements ISimulatorUI {
             loader.setController(controller);
 
             Scene scene = new Scene(loader.load());
-            
+
             // Set the UI reference in the controller after loading
             ((Controller) controller).setUI(this);
             

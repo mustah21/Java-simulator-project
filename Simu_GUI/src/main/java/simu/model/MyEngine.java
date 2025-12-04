@@ -61,13 +61,14 @@ public class MyEngine extends Engine {
         switch ((EventType) t.getType()) {
             case ARR1: {
                 Customer c = new Customer();
-                switch (c.getMealType()) {
+                MealType mealType = c.getMealType();
+                switch (mealType) {
                     case GRILL: grillStation.addQueue(c); break;
                     case VEGAN: veganStation.addQueue(c); break;
                     case NORMAL: normalStation.addQueue(c); break;
                 }
                 arrivalProcess.generateNext();
-                controller.visualiseCustomer();
+                controller.visualiseCustomer(mealType);
                 break;
             }
 

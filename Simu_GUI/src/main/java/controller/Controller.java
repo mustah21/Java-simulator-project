@@ -127,9 +127,9 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 	}
 
 	@Override
-	public void visualiseCustomer() {
+	public void visualiseCustomer(simu.model.MealType mealType) {
 		if (ui != null) {
-			Platform.runLater(() -> ui.getVisualisation().newCustomer());
+			Platform.runLater(() -> ui.getVisualisation().newCustomer(mealType));
 		}
 	}
 }

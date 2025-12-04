@@ -4,6 +4,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import simu.model.MealType;
 
 public class Visualisation2 extends Canvas implements IVisualisation {
 	private GraphicsContext gc;
@@ -20,13 +21,13 @@ public class Visualisation2 extends Canvas implements IVisualisation {
 		gc.fillRect(0, 0, this.getWidth(), this.getHeight());
 	}
 	
-	public void newCustomer() {
+	public void newCustomer(MealType mealType) {
 		customerCount++;
 		
 		gc.setFill(Color.YELLOW);					// first erase old text
 		gc.fillRect(100,80, 130, 20);
 		gc.setFill(Color.RED);						// then write new text
 		gc.setFont(new Font(20));
-		gc.fillText("Customer " + customerCount, 100, 100);
+		gc.fillText("Customer " + customerCount + " (" + mealType + ")", 100, 100);
 	}
 }
