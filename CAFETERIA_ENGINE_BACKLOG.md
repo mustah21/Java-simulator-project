@@ -43,7 +43,7 @@ This backlog outlines the implementation tasks for transforming the generic 3-st
 
 ## Epic 2: Customer Model & Behavior
 
-**Priority: HIGH** | **Status: Not Started**
+**Priority: HIGH** | **Status: COMPLETED**
 
 ### 2.1 Enhance Customer Class
 
