@@ -2,46 +2,49 @@ package simu.model;
 
 import controller.IControllerMtoV;
 import eduni.distributions.Negexp;
-import eduni.distributions.Normal;
 import simu.framework.ArrivalProcess;
 import simu.framework.Clock;
 import simu.framework.Engine;
 import simu.framework.Event;
 
-import static simu.model.MealType.NORMAL;
-import static simu.model.MealType.VEGAN;
-import static simu.model.PaymentType.CASHIER;
-import static simu.model.PaymentType.SELF_SERVICE;
 
 
 public class MyEngine extends Engine {
     private ArrivalProcess arrivalProcess;
+
+    // Created by servicePointFactory
+    private ServicePoint[] servicePoints; // created by factory
     private ServicePoint grillStation;
     private ServicePoint veganStation;
     private ServicePoint normalStation;
     private ServicePoint cashierStation;
     private ServicePoint selfServiceStation;
     private ServicePoint coffeeStation;
+
+
     private boolean selfServiceEnabled = false;
     private boolean coffeeEnabled = false;
 
-    public MyEngine(IControllerMtoV controller) { // NEW
-        super(controller); // NEW
+    public MyEngine(IControllerMtoV controller) {
+        super(controller);
 
-        // These eventTypes are taken from chatgpt, will update them once Tanvir merges his code
+        // Create all service points through the factory in one place.
+        // Pass realistic mean times and flags; tweak numbers or expose them to GUI later.
+        servicePoints = ServicePointFactory.createServicePoints(
+                /*grillTime*/ 45, /*veganTime*/ 40, /*normalTime*/ 30,
+                /*cashierTime*/ 20, /*selfServiceTime*/ 12, /*coffeeTime*/ 10,
+                /*variabilityEnabled*/ true,
+                /*selfServiceEnabled*/ selfServiceEnabled,
+                /*coffeeEnabled*/ coffeeEnabled,
+                /*eventList*/ eventList
+        );
 
-        grillStation = new ServicePoint(new Normal(45, 10), eventList, EventType.MEAL_GRILL_DEP);
-        veganStation = new ServicePoint(new Normal(40, 8), eventList, EventType.MEAL_VEGAN_DEP);
-        normalStation = new ServicePoint(new Normal(30, 5), eventList, EventType.MEAL_NORMAL_DEP);
-        cashierStation = new ServicePoint(new Normal(20, 3), eventList, EventType.PAYMENT_CASHIER_DEP);
-        selfServiceStation = new ServicePoint(new Normal(12, 2), eventList, EventType.PAYMENT_SELF_DEP);
-        coffeeStation = new ServicePoint(new Normal(10, 2), eventList, EventType.COFFEE_DEP);
-
-        // Redundant: Originally were here will remove them soon
-        servicePoints = new ServicePoint[3];
-        servicePoints[0] = new ServicePoint(new Normal(10, 6), eventList, EventType.DEP1);
-        servicePoints[1] = new ServicePoint(new Normal(10, 10), eventList, EventType.DEP2);
-        servicePoints[2] = new ServicePoint(new Normal(5, 3), eventList, EventType.DEP3);
+        grillStation = servicePoints[ServicePointFactory.GRILL_STATION];
+        veganStation = servicePoints[ServicePointFactory.VEGAN_STATION];
+        normalStation = servicePoints[ServicePointFactory.NORMAL_STATION];
+        cashierStation = servicePoints[ServicePointFactory.CASHIER_STATION];
+        selfServiceStation = servicePoints[ServicePointFactory.SELF_SERVICE_STATION];
+        coffeeStation = servicePoints[ServicePointFactory.COFFEE_STATION];
 
         arrivalProcess = new ArrivalProcess(new Negexp(15, 5), eventList, EventType.ARR1);
     }
@@ -53,71 +56,62 @@ public class MyEngine extends Engine {
 
     @Override
     protected void runEvent(Event t) {  // B phase events
-        Customer a;
+        Customer customer;
 
         switch ((EventType) t.getType()) {
             case ARR1: {
-                Customer customer = new Customer();
-
-                switch (customer.getMealType()) {
-                    case GRILL:
-                        grillStation.addQueue(customer);
-                        break;
-                    case VEGAN:
-                        veganStation.addQueue(customer);
-                        break;
-                    case NORMAL:
-                        normalStation.addQueue(customer);
-                        break;
+                Customer c = new Customer();
+                switch (c.getMealType()) {
+                    case GRILL: grillStation.addQueue(c); break;
+                    case VEGAN: veganStation.addQueue(c); break;
+                    case NORMAL: normalStation.addQueue(c); break;
                 }
+                arrivalProcess.generateNext();
+                controller.visualiseCustomer();
+                break;
             }
-            arrivalProcess.generateNext();
-            controller.visualiseCustomer(); // keep this here idk chatgpt says to keep it here
-            break;
 
             case MEAL_GRILL_DEP: {
-                Customer customer = grillStation.removeQueue();
-                routeToPayment(customer);
+                Customer c = grillStation.removeQueue();
+                routeToPayment(c);
                 break;
             }
             case MEAL_VEGAN_DEP: {
-                Customer customer = veganStation.removeQueue();
-                routeToPayment(customer);
+                Customer c = veganStation.removeQueue();
+                routeToPayment(c);
                 break;
             }
             case MEAL_NORMAL_DEP: {
-                Customer customer = normalStation.removeQueue();
-                routeToPayment(customer);
+                Customer c = normalStation.removeQueue();
+                routeToPayment(c);
                 break;
             }
+
             case PAYMENT_CASHIER_DEP: {
-                Customer customer = cashierStation.removeQueue();
-                routeAfterPayment(customer);
+                Customer c = cashierStation.removeQueue();
+                routeAfterPayment(c);
                 break;
             }
             case PAYMENT_SELF_DEP: {
-                Customer customer = selfServiceStation.removeQueue();
-                routeAfterPayment(customer);
+                Customer c = selfServiceStation.removeQueue();
+                routeAfterPayment(c);
                 break;
             }
+
             case COFFEE_DEP: {
-                Customer customer = coffeeStation.removeQueue();
-                customer.setRemovalTime(Clock.getInstance().getTime());
-                customer.reportResults();
+                Customer c = coffeeStation.removeQueue();
+                c.setRemovalTime(Clock.getInstance().getTime());
+                c.reportResults();
                 break;
             }
         }
     }
 
-
     protected void routeToPayment(Customer customer) {
         switch (customer.getPaymentType()) {
             case SELF_SERVICE:
-                if (selfServiceEnabled) {
-                    selfServiceStation.addQueue(customer);
-                } else {
-                    cashierStation.addQueue(customer);
-                }
+                if (selfServiceStation.isEnabled()) selfServiceStation.addQueue(customer);
+                else cashierStation.addQueue(customer);
                 break;
             case CASHIER:
                 cashierStation.addQueue(customer);
@@ -126,10 +120,9 @@ public class MyEngine extends Engine {
     }
 
     private void routeAfterPayment(Customer customer) {
-        if (coffeeEnabled && customer.isWantsCoffee()) {
+        if (ServicePointFactory.shouldVisitCoffeeStation(servicePoints, customer.isWantsCoffee())) {
             coffeeStation.addQueue(customer);
         } else {
-            // Exit flow: customer leaves, record removal time and stats
             customer.setRemovalTime(Clock.getInstance().getTime());
             customer.reportResults();
         }
@@ -137,12 +130,6 @@ public class MyEngine extends Engine {
 
     @Override
     protected void results() {
-        // OLD text UI
-        //System.out.println("Simulation ended at " + Clock.getInstance().getClock());
-        //System.out.println("Results ... are currently missing");
-
-        // NEW GUI
         controller.showEndTime(Clock.getInstance().getTime());
     }
 }
-
