@@ -3,6 +3,7 @@ package controller;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.chart.*;
 import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
 import simu.framework.IEngine;
@@ -10,6 +11,8 @@ import simu.model.MyEngine;
 import view.ISimulatorUI;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class Controller implements IControllerVtoM, IControllerMtoV, Initializable {
@@ -40,12 +43,69 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 	@FXML private Label simTimeLabel;
 	@FXML private Pane simulationCanvas;
 	
+	// Charts
+	@FXML private LineChart<Number, Number> queueChart;
+	@FXML private BarChart<String, Number> utilChart;
+	
+	// Chart data tracking
+	private XYChart.Series<Number, Number> totalQueueSeries;
+	private List<ChartDataPoint> queueHistory = new ArrayList<>();
+	private int[] latestQueueData = new int[6]; // Store latest queue data for utilization chart
+	private double lastCollectionTime = -1.0; // Track last collection time to avoid duplicates
+	
+	// Track utilization data (time when each station was busy)
+	private List<UtilizationDataPoint> utilizationHistory = new ArrayList<>();
+	
+	// Helper class to track utilization over time
+	private static class UtilizationDataPoint {
+		double time;
+		int[] queueLengths; // Queue lengths for all 6 stations
+		
+		UtilizationDataPoint(double time, int[] queueLengths) {
+			this.time = time;
+			this.queueLengths = queueLengths.clone();
+		}
+	}
+	
+	// Helper class to track chart data points
+	private static class ChartDataPoint {
+		double time;
+		int queueLength;
+		
+		ChartDataPoint(double time, int queueLength) {
+			this.time = time;
+			this.queueLength = queueLength;
+		}
+	}
+	
+	// Queue progress bars
+	@FXML private javafx.scene.control.ProgressBar veganQueueProgress;
+	@FXML private javafx.scene.control.ProgressBar normalQueueProgress;
+	@FXML private javafx.scene.control.ProgressBar grillQueueProgress;
+	@FXML private javafx.scene.control.ProgressBar selfServiceQueueProgress;
+	@FXML private javafx.scene.control.ProgressBar cashierQueueProgress;
+	@FXML private javafx.scene.control.ProgressBar cashierQueueProgress2;
+	@FXML private javafx.scene.control.ProgressBar coffeeQueueProgress;
+	
+	// Queue labels
+	@FXML private Label veganQueueLabel;
+	@FXML private Label normalQueueLabel;
+	@FXML private Label grillQueueLabel;
+	@FXML private Label selfServiceQueueLabel;
+	@FXML private Label cashierQueueLabel1;
+	@FXML private Label cashierQueueLabel2;
+	@FXML private Label coffeeQueueLabel;
+	
 	public Controller() {
 		// No-arg constructor required for FXML
 	}
 	
 	public void setUI(ISimulatorUI ui) {
 		this.ui = ui;
+	}
+	
+	public Pane getSimulationCanvas() {
+		return simulationCanvas;
 	}
 	
 	@Override
@@ -57,9 +117,59 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 			});
 		}
 		
-		// Wire up Run button to print GUI data
+		// Wire up Run button to start simulation
 		if (runBtn2 != null) {
-			runBtn2.setOnAction(e -> printGUIData());
+			runBtn2.setOnAction(e -> startSimulation());
+		}
+		
+		// Wire up Reset button
+		if (resetBtn != null) {
+			resetBtn.setOnAction(e -> resetSimulation());
+		}
+		
+		// Wire up Pause button
+		if (pauseBtn != null) {
+			pauseBtn.setOnAction(e -> pauseSimulation());
+		}
+		
+		// Wire up Resume button
+		if (resumeBtn != null) {
+			resumeBtn.setOnAction(e -> resumeSimulation());
+		}
+		
+		// Initialize charts
+		initializeCharts();
+	}
+	
+	private void initializeCharts() {
+		// Initialize queue chart
+		if (queueChart != null) {
+			queueChart.setTitle("Total Queue Length Over Time");
+			queueChart.setAnimated(false); // Disable animation for better performance
+			queueChart.setCreateSymbols(false); // Don't show symbols for cleaner look
+			
+			// Set axis labels
+			NumberAxis xAxis = (NumberAxis) queueChart.getXAxis();
+			xAxis.setLabel("Time (seconds)");
+			NumberAxis yAxis = (NumberAxis) queueChart.getYAxis();
+			yAxis.setLabel("Queue Length");
+			
+			totalQueueSeries = new XYChart.Series<>();
+			totalQueueSeries.setName("Total Queue Length");
+			queueChart.getData().add(totalQueueSeries);
+		}
+		
+		// Initialize utilization chart
+		if (utilChart != null) {
+			utilChart.setTitle("Station Utilization");
+			utilChart.setAnimated(false);
+			utilChart.setLegendVisible(false);
+			
+			// Set axis labels
+			CategoryAxis xAxis = (CategoryAxis) utilChart.getXAxis();
+			xAxis.setLabel("Station");
+			NumberAxis yAxis = (NumberAxis) utilChart.getYAxis();
+			yAxis.setLabel("Utilization (%)");
 		}
 	}
 	
@@ -92,13 +202,132 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 	/* Engine control: */
 	@Override
 	public void startSimulation() {
-		if (ui == null) return;
-		engine = new MyEngine(this); // new Engine thread is created for every simulation
-		engine.setSimulationTime(ui.getTime());
-		engine.setDelay(ui.getDelay());
-		ui.getVisualisation().clearDisplay();
+		// Stop existing simulation if running
+		if (engine != null && ((Thread) engine).isAlive()) {
+			((Thread) engine).interrupt();
+		}
+		
+		// Read values from UI controls
+		double openingHours = parseDouble(openingHoursField, 3.0);
+		double arrivalRate = arrivalSlider != null ? arrivalSlider.getValue() : 120.0;
+		
+		double grillTime = parseDouble(this.grillTime, 45.0);
+		double veganTime = parseDouble(this.veganTime, 40.0);
+		double normalTime = parseDouble(this.normalTime, 30.0);
+		
+		double cashierTime = parseDouble(this.cashierTime, 20.0);
+		double selfServiceTime = parseDouble(this.selfServiceTime, 12.0);
+		boolean selfServiceEnabled = enableSelfService != null && enableSelfService.isSelected();
+		
+		double coffeeTime = parseDouble(this.coffeeTime, 10.0);
+		boolean coffeeEnabled = coffeeOptional != null && coffeeOptional.isSelected();
+		
+		boolean variabilityEnabled = variabilityToggle != null && variabilityToggle.isSelected();
+		
+		// Parse queue capacity from UI
+		int maxQueueCapacity = Integer.MAX_VALUE; // Default to unlimited
+		if (queueCapacity != null && queueCapacity.getValue() != null) {
+			String capacityValue = queueCapacity.getValue();
+			if (!capacityValue.equals("Unlimited")) {
+				try {
+					maxQueueCapacity = Integer.parseInt(capacityValue);
+				} catch (NumberFormatException e) {
+					maxQueueCapacity = Integer.MAX_VALUE; // Fallback to unlimited
+				}
+			}
+		}
+		
+		// Convert opening hours to simulation time (convert hours -> seconds)
+		// Service times are in seconds, so simulation time should also be in seconds
+		double simulationTime = openingHours * 3600.0; // Convert hours to seconds
+		
+		// Create engine with user-provided parameters
+		engine = new MyEngine(this, 
+			grillTime, veganTime, normalTime,
+			cashierTime, selfServiceTime, coffeeTime,
+			variabilityEnabled, selfServiceEnabled, coffeeEnabled,
+			arrivalRate, maxQueueCapacity
+		);
+		
+		engine.setSimulationTime(simulationTime);
+		engine.setDelay(100); // Default delay in milliseconds
+		
+		// Clear visualization
+		if (ui != null && ui.getVisualisation() != null) {
+			ui.getVisualisation().clearDisplay();
+		}
+		
+		// Start simulation thread
 		((Thread) engine).start();
-		//((Thread)engine).run(); // Never like this, why?
+	}
+	
+	private double parseDouble(TextField field, double defaultValue) {
+		if (field == null || field.getText() == null || field.getText().trim().isEmpty()) {
+			return defaultValue;
+		}
+		try {
+			return Double.parseDouble(field.getText().trim());
+		} catch (NumberFormatException e) {
+			return defaultValue;
+		}
+	}
+	
+	private void resetSimulation() {
+		// Stop current simulation if running
+		if (engine != null && ((Thread) engine).isAlive()) {
+			((Thread) engine).interrupt();
+			try {
+				((Thread) engine).join(1000); // Wait up to 1 second for thread to finish
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+			}
+		}
+		engine = null;
+		
+		// Reset Clock to 0
+		simu.framework.Clock.getInstance().reset();
+		
+		// Reset Customer static counters
+		simu.model.Customer.reset();
+		
+		// Clear visualization
+		if (ui != null && ui.getVisualisation() != null) {
+			ui.getVisualisation().clearDisplay();
+		}
+		
+		// Reset metrics labels
+		if (throughputLabel != null) throughputLabel.setText("0 students/hr");
+		if (avgWaitLabel != null) avgWaitLabel.setText("0 s");
+		if (peakQueueLabel != null) peakQueueLabel.setText("0");
+		if (simTimeLabel != null) simTimeLabel.setText("00:00");
+		
+		// Reset all progress bars to 0
+		updateQueueDisplays(0, 0, 0, 0, 0, 0);
+		
+		// Clear charts and reset data collection
+		if (queueChart != null && totalQueueSeries != null) {
+			totalQueueSeries.getData().clear();
+		}
+		queueHistory.clear();
+		utilizationHistory.clear();
+		latestQueueData = new int[6];
+		lastCollectionTime = -1.0;
+		
+		if (utilChart != null) {
+			utilChart.getData().clear();
+		}
+	}
+	
+	private void pauseSimulation() {
+		if (engine != null && ((Thread) engine).isAlive()) {
+			engine.pause();
+		}
+	}
+	
+	private void resumeSimulation() {
+		if (engine != null && ((Thread) engine).isAlive()) {
+			engine.resumeSimulation();
+		}
 	}
 	
 	@Override
@@ -122,8 +351,29 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 	@Override
 	public void showEndTime(double time) {
 		if (ui != null) {
-			Platform.runLater(()->ui.setEndingTime(time));
+			Platform.runLater(() -> {
+				ui.setEndingTime(time);
+				// Update charts with final data
+				updateChartsAtEnd();
+				showSimulationEndPopup(time);
+			});
 		}
+	}
+	
+	private void showSimulationEndPopup(double endTime) {
+		// Format time as hours, minutes, and seconds (endTime is in seconds)
+		int totalSeconds = (int)endTime;
+		int hours = totalSeconds / 3600;
+		int minutes = (totalSeconds % 3600) / 60;
+		int seconds = totalSeconds % 60;
+		String timeString = String.format("%d:%02d:%02d", hours, minutes, seconds);
+		
+		Alert alert = new Alert(Alert.AlertType.INFORMATION);
+		alert.setTitle("Simulation Complete");
+		alert.setHeaderText("Simulation has ended");
+		alert.setContentText("The simulation has completed.\n\nEnd Time: " + timeString + " (hours:minutes:seconds)");
+		
+		alert.showAndWait();
 	}
 
 	@Override
@@ -131,5 +381,209 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 		if (ui != null) {
 			Platform.runLater(() -> ui.getVisualisation().newCustomer(mealType));
 		}
+	}
+	
+	@Override
+	public void visualiseCustomerToPayment(simu.model.MealType mealType, simu.model.PaymentType paymentType) {
+		if (ui != null) {
+			Platform.runLater(() -> ui.getVisualisation().customerToPayment(mealType, paymentType));
+		}
+	}
+	
+	@Override
+	public void visualiseCustomerToCoffee(simu.model.PaymentType paymentType) {
+		if (ui != null) {
+			Platform.runLater(() -> ui.getVisualisation().customerToCoffee(paymentType));
+		}
+	}
+	
+	@Override
+	public void visualiseCustomerExitFromCoffee() {
+		if (ui != null) {
+			Platform.runLater(() -> ui.getVisualisation().customerExitFromCoffee());
+		}
+	}
+	
+	@Override
+	public void visualiseCustomerExitFromPayment(simu.model.PaymentType paymentType) {
+		if (ui != null) {
+			Platform.runLater(() -> ui.getVisualisation().customerExitFromPayment(paymentType));
+		}
+	}
+	
+	@Override
+	public void updateQueueDisplays(int grillQueue, int veganQueue, int normalQueue,
+	                                int cashierQueue, int selfServiceQueue, int coffeeQueue) {
+		Platform.runLater(() -> {
+			// Update progress bars (assuming max capacity of 20 for visualization)
+			// Progress bars are rotated -90 degrees, so they fill from bottom to top
+			double maxCapacity = 20.0;
+			
+			updateProgressBar(grillQueueProgress, grillQueue, maxCapacity);
+			updateProgressBar(veganQueueProgress, veganQueue, maxCapacity);
+			updateProgressBar(normalQueueProgress, normalQueue, maxCapacity);
+			updateProgressBar(cashierQueueProgress, cashierQueue, maxCapacity);
+			updateProgressBar(cashierQueueProgress2, cashierQueue, maxCapacity);
+			updateProgressBar(selfServiceQueueProgress, selfServiceQueue, maxCapacity);
+			updateProgressBar(coffeeQueueProgress, coffeeQueue, maxCapacity);
+			
+			// Update labels
+			if (grillQueueLabel != null) {
+				grillQueueLabel.setText("Queue: " + grillQueue);
+			}
+			if (veganQueueLabel != null) {
+				veganQueueLabel.setText("Queue: " + veganQueue);
+			}
+			if (normalQueueLabel != null) {
+				normalQueueLabel.setText("Queue: " + normalQueue);
+			}
+			if (cashierQueueLabel1 != null) {
+				cashierQueueLabel1.setText("Queue: " + cashierQueue);
+			}
+			if (cashierQueueLabel2 != null) {
+				cashierQueueLabel2.setText("Queue: " + cashierQueue);
+			}
+			if (selfServiceQueueLabel != null) {
+				selfServiceQueueLabel.setText("Queue: " + selfServiceQueue);
+			}
+			if (coffeeQueueLabel != null) {
+				coffeeQueueLabel.setText("Queue: " + coffeeQueue);
+			}
+			
+			// Collect data for charts (but don't update display until simulation ends)
+			collectChartData(grillQueue, veganQueue, normalQueue, cashierQueue, selfServiceQueue, coffeeQueue);
+		});
+	}
+	
+	// Collect chart data during simulation (but don't update display)
+	private void collectChartData(int grillQueue, int veganQueue, int normalQueue,
+	                              int cashierQueue, int selfServiceQueue, int coffeeQueue) {
+		// Get current simulation time (in seconds)
+		double currentTime = simu.framework.Clock.getInstance().getTime();
+		
+		// Calculate total queue length
+		int totalQueue = grillQueue + veganQueue + normalQueue + cashierQueue + selfServiceQueue + coffeeQueue;
+		
+		// Collect data points for queue chart at every update to get full simulation data
+		// Only skip if time hasn't changed (avoid duplicate points at same time)
+		if (currentTime != lastCollectionTime) {
+			queueHistory.add(new ChartDataPoint(currentTime, totalQueue));
+			
+			// Also collect utilization data (queue lengths for each station)
+			int[] queueLengths = new int[]{grillQueue, veganQueue, normalQueue, cashierQueue, selfServiceQueue, coffeeQueue};
+			utilizationHistory.add(new UtilizationDataPoint(currentTime, queueLengths));
+			
+			lastCollectionTime = currentTime;
+		}
+		
+		// Store latest queue data for utilization chart
+		latestQueueData = new int[]{grillQueue, veganQueue, normalQueue, cashierQueue, selfServiceQueue, coffeeQueue};
+	}
+	
+	// Update charts only at the end of simulation
+	private void updateChartsAtEnd() {
+		// Update queue chart with all collected data
+		if (queueChart != null && totalQueueSeries != null) {
+			totalQueueSeries.getData().clear();
+			for (ChartDataPoint point : queueHistory) {
+				totalQueueSeries.getData().add(new XYChart.Data<>(point.time, point.queueLength));
+			}
+		}
+		
+		// Update utilization chart with average utilization over entire simulation
+		if (utilChart != null && !utilizationHistory.isEmpty()) {
+			utilChart.getData().clear();
+			
+			XYChart.Series<String, Number> series = new XYChart.Series<>();
+			
+			// Calculate average utilization based on average queue length over entire simulation
+			// Utilization = average queue length / max capacity * 100%
+			double maxCapacity = 20.0; // Same as progress bar max
+			
+			// Calculate average queue length for each station over entire simulation
+			double[] avgQueueLengths = new double[6];
+			for (UtilizationDataPoint point : utilizationHistory) {
+				for (int i = 0; i < 6; i++) {
+					avgQueueLengths[i] += point.queueLengths[i];
+				}
+			}
+			
+			// Calculate averages
+			int dataPoints = utilizationHistory.size();
+			if (dataPoints > 0) {
+				for (int i = 0; i < 6; i++) {
+					avgQueueLengths[i] /= dataPoints;
+				}
+			}
+			
+			// Add data to chart
+			series.getData().add(new XYChart.Data<>("Grill", Math.min(100.0, (avgQueueLengths[0] / maxCapacity) * 100.0)));
+			series.getData().add(new XYChart.Data<>("Vegan", Math.min(100.0, (avgQueueLengths[1] / maxCapacity) * 100.0)));
+			series.getData().add(new XYChart.Data<>("Normal", Math.min(100.0, (avgQueueLengths[2] / maxCapacity) * 100.0)));
+			series.getData().add(new XYChart.Data<>("Cashier", Math.min(100.0, (avgQueueLengths[3] / maxCapacity) * 100.0)));
+			series.getData().add(new XYChart.Data<>("Self-Svc", Math.min(100.0, (avgQueueLengths[4] / maxCapacity) * 100.0)));
+			series.getData().add(new XYChart.Data<>("Coffee", Math.min(100.0, (avgQueueLengths[5] / maxCapacity) * 100.0)));
+			
+			utilChart.getData().add(series);
+		}
+	}
+	
+	@Override
+	public void updateStatistics(double throughput, double avgWaitTime, int peakQueue, double simTime) {
+		Platform.runLater(() -> {
+			// Update throughput (customers per hour)
+			if (throughputLabel != null) {
+				throughputLabel.setText(String.format("%.1f students/hr", throughput));
+			}
+			
+			// Update average wait time (in seconds)
+			if (avgWaitLabel != null) {
+				avgWaitLabel.setText(String.format("%.1f s", avgWaitTime));
+			}
+			
+			// Update peak queue length
+			if (peakQueueLabel != null) {
+				peakQueueLabel.setText(String.valueOf(peakQueue));
+			}
+			
+			// Update simulation time (format as HH:MM:SS)
+			if (simTimeLabel != null) {
+				int totalSeconds = (int)simTime;
+				int hours = totalSeconds / 3600;
+				int minutes = (totalSeconds % 3600) / 60;
+				int seconds = totalSeconds % 60;
+				simTimeLabel.setText(String.format("%02d:%02d:%02d", hours, minutes, seconds));
+			}
+		});
+	}
+	
+	private void updateProgressBar(javafx.scene.control.ProgressBar progressBar, int queueLength, double maxCapacity) {
+		if (progressBar == null) return;
+		
+		// Ensure progress is calculated correctly, accounting for customers being served
+		// queueLength includes customers being served (they're still in the queue)
+		double progress = Math.min((double)queueLength / maxCapacity, 1.0);
+		
+		// Ensure minimum visible progress when there's at least one customer
+		// This ensures the progress bar is visible even with just one customer being served
+		if (queueLength > 0 && progress < 0.01) {
+			progress = 0.01; // Minimum 1% to make it visible
+		}
+		
+		progressBar.setProgress(progress);
+		
+		// Determine color based on capacity percentage
+		// Blue (low): 0-33%, Yellow (medium): 34-66%, Red (high): 67-100%
+		String color;
+		if (progress <= 0.33) {
+			color = "#2196F3"; // Blue
+		} else if (progress <= 0.66) {
+			color = "#FFC107"; // Yellow/Amber
+		} else {
+			color = "#F44336"; // Red
+		}
+		
+		// Apply CSS style to change the progress bar color
+		progressBar.setStyle("-fx-accent: " + color + ";");
 	}
 }

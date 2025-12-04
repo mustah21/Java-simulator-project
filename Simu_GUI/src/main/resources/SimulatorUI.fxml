@@ -216,6 +216,8 @@
                 </HBox>
                 <Arc fill="DODGERBLUE" layoutX="260.0" layoutY="24.0" length="180.0" radiusX="28.0" radiusY="25.0"
                      rotate="179.9" stroke="BLACK" strokeType="INSIDE" type="ROUND"/>
+                <Arc fill="RED" layoutX="50.0" layoutY="496.0" length="180.0" radiusX="28.0" radiusY="25.0"
+                     rotate="0.0" stroke="BLACK" strokeType="INSIDE" type="ROUND"/>
                 <HBox layoutX="204.0" layoutY="94.0" prefHeight="57.0" prefWidth="128.0">
                     <ProgressBar fx:id="normalQueueProgress" minHeight="-Infinity" minWidth="-Infinity"
                                  prefHeight="18.0" prefWidth="54.0" progress="0.67" rotate="-90.0">

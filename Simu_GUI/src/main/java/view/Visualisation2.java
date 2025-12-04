@@ -5,6 +5,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import simu.model.MealType;
+import simu.model.PaymentType;
 
 public class Visualisation2 extends Canvas implements IVisualisation {
 	private GraphicsContext gc;
@@ -29,5 +30,25 @@ public class Visualisation2 extends Canvas implements IVisualisation {
 		gc.setFill(Color.RED);						// then write new text
 		gc.setFont(new Font(20));
 		gc.fillText("Customer " + customerCount + " (" + mealType + ")", 100, 100);
+	}
+	
+	@Override
+	public void customerToPayment(MealType mealType, PaymentType paymentType) {
+		// Stub implementation for Visualisation2
+	}
+	
+	@Override
+	public void customerToCoffee(PaymentType paymentType) {
+		// Stub implementation for Visualisation2
+	}
+	
+	@Override
+	public void customerExitFromCoffee() {
+		// Stub implementation for Visualisation2
+	}
+	
+	@Override
+	public void customerExitFromPayment(PaymentType paymentType) {
+		// Stub implementation for Visualisation2
 	}
 }

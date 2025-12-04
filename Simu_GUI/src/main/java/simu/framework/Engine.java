@@ -7,6 +7,7 @@ public abstract class Engine extends Thread implements IEngine {  // NEW DEFINIT
 	private double simulationTime = 0;	// time when the simulation will be stopped
 	private long delay = 0;
 	private Clock clock;				// in order to simplify the code (clock.getClock() instead Clock.getInstance().getClock())
+	private volatile boolean paused = false;  // Pause flag
 	
 	protected EventList eventList;
 	protected ServicePoint[] servicePoints;
@@ -38,14 +39,44 @@ public abstract class Engine extends Thread implements IEngine {  // NEW DEFINIT
 	public void run() {
 		initialization(); // creating, e.g., the first event
 
-		while (simulate()){
+		while (simulate() && !Thread.currentThread().isInterrupted()){
+			// Wait if paused
+			while (paused && !Thread.currentThread().isInterrupted()) {
+				try {
+					Thread.sleep(100); // Check pause state every 100ms
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+					break;
+				}
+			}
+			
+			if (Thread.currentThread().isInterrupted()) {
+				break;
+			}
+			
 			delay(); // NEW
 			clock.setTime(currentTime());
 			runBEvents();
 			tryCEvents();
+			updateDisplays(); // Update UI displays after each simulation step
 		}
 
 		results();
+	}
+	
+	@Override
+	public void pause() {
+		paused = true;
+	}
+	
+	@Override
+	public void resumeSimulation() {
+		paused = false;
+	}
+	
+	@Override
+	public boolean isPaused() {
+		return paused;
 	}
 	
 	private void runBEvents() {
@@ -83,4 +114,7 @@ public abstract class Engine extends Thread implements IEngine {  // NEW DEFINIT
 	protected abstract void initialization(); 	// Defined in simu.model-package's class who is inheriting the Engine class
 	protected abstract void runEvent(Event t);	// Defined in simu.model-package's class who is inheriting the Engine class
 	protected abstract void results(); 			// Defined in simu.model-package's class who is inheriting the Engine class
+	protected void updateDisplays() {			// Override in subclasses to update UI displays
+		// Default implementation does nothing
+	}
 }

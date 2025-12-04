@@ -4,8 +4,8 @@ import javafx.animation.AnimationTimer;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import simu.model.MealType;
+import simu.model.PaymentType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,20 +13,32 @@ import java.util.List;
 public class Visualisation extends Canvas implements IVisualisation {
 	private GraphicsContext gc;
 	
-	// Entry point (blue circle)
-	private static final double ENTRY_X = 50;
-	private static final double ENTRY_Y = 200;
-	private static final double ENTRY_RADIUS = 20;
+	// Entry point (Arc position from FXML - half circle at top)
+	private static final double ENTRY_X = 260.0;
+	private static final double ENTRY_Y = 24.0;
 	
-	// Service point positions
-	private static final double SERVICE_POINT_RADIUS = 25;
-	private static final double SERVICE_Y = 150;
-	private static final double GRILL_X = 200;
-	private static final double VEGAN_X = 300;
-	private static final double NORMAL_X = 400;
-	private static final double CASHIER_X = 500;
-	private static final double SELF_SERVICE_X = 600;
-	private static final double COFFEE_X = 700;
+	// Exit point (Arc position from FXML - half circle at bottom left)
+	private static final double EXIT_X = 50.0;
+	private static final double EXIT_Y = 496.0;
+	
+	// Service point positions (center of HBox containers from FXML)
+	// Meal stations (top row, y ~ 122)
+	private static final double VEGAN_X = 100.0;   // layoutX=36 + width/2
+	private static final double VEGAN_Y = 122.0;   // layoutY=94 + height/2
+	private static final double NORMAL_X = 268.0;  // layoutX=204 + width/2
+	private static final double NORMAL_Y = 122.0;
+	private static final double GRILL_X = 442.0;   // layoutX=378 + width/2
+	private static final double GRILL_Y = 122.0;
+	
+	// Payment stations (middle row, y ~ 260)
+	private static final double SELF_SERVICE_X = 116.0;  // layoutX=36 + width/2
+	private static final double SELF_SERVICE_Y = 260.0;   // layoutY=232 + height/2
+	private static final double CASHIER_X = 288.0;       // layoutX=216 + width/2
+	private static final double CASHIER_Y = 267.0;       // layoutY=238 + height/2
+	
+	// Coffee station (bottom row, y ~ 404)
+	private static final double COFFEE_X = 275.0;        // layoutX=204 + width/2
+	private static final double COFFEE_Y = 404.0;       // layoutY=376 + height/2
 	
 	// Customer representation
 	private static final double CUSTOMER_RADIUS = 8;
@@ -54,38 +66,14 @@ public class Visualisation extends Canvas implements IVisualisation {
 	}
 	
 	private void drawStaticElements() {
-		// Draw entry point (blue circle)
-		gc.setFill(Color.BLUE);
-		gc.fillOval(ENTRY_X - ENTRY_RADIUS, ENTRY_Y - ENTRY_RADIUS, 
-				   ENTRY_RADIUS * 2, ENTRY_RADIUS * 2);
-		gc.setFill(Color.WHITE);
-		gc.setFont(new Font(12));
-		gc.fillText("Entry", ENTRY_X - 20, ENTRY_Y + ENTRY_RADIUS + 15);
-		
-		// Draw service points
-		drawServicePoint(GRILL_X, SERVICE_Y, Color.ORANGE, "Grill");
-		drawServicePoint(VEGAN_X, SERVICE_Y, Color.GREEN, "Vegan");
-		drawServicePoint(NORMAL_X, SERVICE_Y, Color.PURPLE, "Normal");
-		drawServicePoint(CASHIER_X, SERVICE_Y, Color.RED, "Cashier");
-		drawServicePoint(SELF_SERVICE_X, SERVICE_Y, Color.CYAN, "Self-Service");
-		drawServicePoint(COFFEE_X, SERVICE_Y, Color.BROWN, "Coffee");
-	}
-	
-	private void drawServicePoint(double x, double y, Color color, String label) {
-		gc.setFill(color);
-		gc.fillOval(x - SERVICE_POINT_RADIUS, y - SERVICE_POINT_RADIUS,
-				   SERVICE_POINT_RADIUS * 2, SERVICE_POINT_RADIUS * 2);
-		gc.setFill(Color.BLACK);
-		gc.setFont(new Font(10));
-		gc.fillText(label, x - label.length() * 3, y + SERVICE_POINT_RADIUS + 15);
+		// No static elements to draw - the Arc and service point images are already in FXML
+		// We only draw customers on top of the existing UI elements
 	}
 	
 	private void updateAndDraw() {
-		// Clear canvas
+		// Clear only the area where customers are drawn (transparent clear)
+		// The background images from FXML will show through
 		gc.clearRect(0, 0, this.getWidth(), this.getHeight());
-		
-		// Redraw static elements
-		drawStaticElements();
 		
 		// Update and draw active customers
 		List<CustomerAnimation> toRemove = new ArrayList<>();
@@ -102,31 +90,72 @@ public class Visualisation extends Canvas implements IVisualisation {
 		activeCustomers.removeAll(toRemove);
 	}
 	
-	private double getServicePointX(MealType mealType) {
+	private double[] getServicePointPosition(MealType mealType) {
 		switch (mealType) {
 			case GRILL:
-				return GRILL_X;
+				return new double[]{GRILL_X, GRILL_Y};
 			case VEGAN:
-				return VEGAN_X;
+				return new double[]{VEGAN_X, VEGAN_Y};
 			case NORMAL:
-				return NORMAL_X;
+				return new double[]{NORMAL_X, NORMAL_Y};
 			default:
-				return NORMAL_X;
+				return new double[]{NORMAL_X, NORMAL_Y};
 		}
 	}
 
 	public void clearDisplay() {
 		gc.clearRect(0, 0, this.getWidth(), this.getHeight());
 		activeCustomers.clear();
-		drawStaticElements();
 	}
 	
 	public void newCustomer(MealType mealType) {
-		double targetX = getServicePointX(mealType);
+		double[] targetPos = getServicePointPosition(mealType);
 		CustomerAnimation customer = new CustomerAnimation(
-			ENTRY_X, ENTRY_Y, targetX, SERVICE_Y, mealType
+			ENTRY_X, ENTRY_Y, targetPos[0], targetPos[1], mealType
 		);
 		activeCustomers.add(customer);
+	}
+	
+	public void customerToPayment(MealType mealType, PaymentType paymentType) {
+		double[] startPos = getServicePointPosition(mealType);
+		double[] targetPos = getPaymentPosition(paymentType);
+		CustomerAnimation customer = new CustomerAnimation(
+			startPos[0], startPos[1], targetPos[0], targetPos[1], mealType
+		);
+		activeCustomers.add(customer);
+	}
+	
+	public void customerToCoffee(PaymentType paymentType) {
+		double[] startPos = getPaymentPosition(paymentType);
+		CustomerAnimation customer = new CustomerAnimation(
+			startPos[0], startPos[1], COFFEE_X, COFFEE_Y, null
+		);
+		activeCustomers.add(customer);
+	}
+	
+	public void customerExitFromCoffee() {
+		// Exit from coffee station - move to exit circle at bottom
+		CustomerAnimation customer = new CustomerAnimation(
+			COFFEE_X, COFFEE_Y, EXIT_X, EXIT_Y, null
+		);
+		activeCustomers.add(customer);
+	}
+	
+	public void customerExitFromPayment(PaymentType paymentType) {
+		double[] startPos = getPaymentPosition(paymentType);
+		// Exit point - move to exit circle at bottom
+		CustomerAnimation customer = new CustomerAnimation(
+			startPos[0], startPos[1], EXIT_X, EXIT_Y, null
+		);
+		activeCustomers.add(customer);
+	}
+	
+	private double[] getPaymentPosition(PaymentType paymentType) {
+		if (paymentType == PaymentType.SELF_SERVICE) {
+			return new double[]{SELF_SERVICE_X, SELF_SERVICE_Y};
+		} else {
+			return new double[]{CASHIER_X, CASHIER_Y};
+		}
 	}
 	
 	// Inner class for customer animation
@@ -142,19 +171,24 @@ public class Visualisation extends Canvas implements IVisualisation {
 			this.targetX = targetX;
 			this.targetY = targetY;
 			
-			// Assign color based on meal type
-			switch (mealType) {
-				case GRILL:
-					customerColor = Color.ORANGERED;
-					break;
-				case VEGAN:
-					customerColor = Color.DARKGREEN;
-					break;
-				case NORMAL:
-					customerColor = Color.DARKVIOLET;
-					break;
-				default:
-					customerColor = Color.RED;
+			// Assign color based on meal type (if null, use default color)
+			if (mealType != null) {
+				switch (mealType) {
+					case GRILL:
+						customerColor = Color.ORANGERED;
+						break;
+					case VEGAN:
+						customerColor = Color.DARKGREEN;
+						break;
+					case NORMAL:
+						customerColor = Color.DARKVIOLET;
+						break;
+					default:
+						customerColor = Color.RED;
+				}
+			} else {
+				// Default color for customers without meal type (e.g., after payment)
+				customerColor = Color.DARKBLUE;
 			}
 		}
 		
