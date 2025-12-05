@@ -107,6 +107,10 @@ public class Customer {
 		double mean = sum/id;
 		System.out.println("Current mean of the customer service times " + mean);
 	}
-
+	
+	public static void reset() {
+		i = 1;
+		sum = 0;
+	}
 
 }
