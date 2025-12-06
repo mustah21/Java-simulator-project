@@ -71,7 +71,8 @@ public class SimulatorGUI extends Application implements ISimulatorUI {
 
 	/* UI interface methods (controller calls) */
 	@Override
-	public double getTime(){
+	public double
+    getTime(){
         // This is now handled directly in Controller.startSimulation()
         return 0;
 	}

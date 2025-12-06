@@ -97,7 +97,7 @@ public class Visualisation extends Canvas implements IVisualisation {
 			case VEGAN:
 				return new double[]{VEGAN_X, VEGAN_Y};
 			case NORMAL:
-				return new double[]{NORMAL_X, NORMAL_Y};
+				return new double[]{NORMAL_X, NORMAL_Y};  // redundant
 			default:
 				return new double[]{NORMAL_X, NORMAL_Y};
 		}
