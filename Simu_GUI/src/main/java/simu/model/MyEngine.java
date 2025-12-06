@@ -18,12 +18,13 @@ public class MyEngine extends Engine {
     private ServicePoint veganStation;
     private ServicePoint normalStation;
     private ServicePoint cashierStation;
+    private ServicePoint cashierStation2;
     private ServicePoint selfServiceStation;
     private ServicePoint coffeeStation;
 
 
-    private boolean selfServiceEnabled = false;
-    private boolean coffeeEnabled = false;
+
+
     private int maxQueueCapacity;
     private boolean arrivalsStopped = false;
     
@@ -39,8 +40,8 @@ public class MyEngine extends Engine {
                     double arrivalRate, int maxQueueCapacity) {
         super(controller);
 
-        this.selfServiceEnabled = selfServiceEnabled;
-        this.coffeeEnabled = coffeeEnabled;
+
+
         this.maxQueueCapacity = maxQueueCapacity;
 
         // Create all service points through the factory with user-provided values
@@ -57,6 +58,7 @@ public class MyEngine extends Engine {
         veganStation = servicePoints[ServicePointFactory.VEGAN_STATION];
         normalStation = servicePoints[ServicePointFactory.NORMAL_STATION];
         cashierStation = servicePoints[ServicePointFactory.CASHIER_STATION];
+        cashierStation2 = servicePoints[ServicePointFactory.CASHIER_STATION_2];
         selfServiceStation = servicePoints[ServicePointFactory.SELF_SERVICE_STATION];
         coffeeStation = servicePoints[ServicePointFactory.COFFEE_STATION];
 
@@ -184,10 +186,24 @@ public class MyEngine extends Engine {
                 else cashierStation.addQueue(customer);
                 break;
             case CASHIER:
-                cashierStation.addQueue(customer);
+                redirectToCashier(customer);
                 break;
         }
+
         updateQueueDisplays();
+    }
+    protected void redirectToCashier(Customer customer) {
+            if(cashierStation.getQueueLength()<maxQueueCapacity){
+            cashierStation.addQueue(customer);
+
+        }
+            else if (cashierStation2.getQueueLength()<maxQueueCapacity){
+                cashierStation2.addQueue(customer);
+            }
+            else {
+                return;
+            };
+
     }
 
     private void routeAfterPayment(Customer customer) {
