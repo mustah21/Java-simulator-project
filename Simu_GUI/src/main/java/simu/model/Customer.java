@@ -68,7 +68,7 @@ public class Customer {
         if (assignCoffeeDecision()) {
             wantsCoffee = true;
         }
-        return wantsCoffee = false;
+        return wantsCoffee;
     }
 
     public MealType getMealType() {

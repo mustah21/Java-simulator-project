@@ -11,6 +11,7 @@ public class ServicePointFactory {
     public static final int VEGAN_STATION = 1;
     public static final int NORMAL_STATION = 2;
     public static final int CASHIER_STATION = 3;
+    public static final int CASHIER_STATION_2 = 6;
     public static final int SELF_SERVICE_STATION = 4;
     public static final int COFFEE_STATION = 5;
 
@@ -20,8 +21,8 @@ public class ServicePointFactory {
             boolean variabilityEnabled, boolean selfServiceEnabled, boolean coffeeEnabled,
             EventList eventList) {
 
-        ServicePoint[] servicePoints = new ServicePoint[6];
-
+        ServicePoint[] servicePoints = new ServicePoint[7];
+        System.out.println("self-service enabled? " + selfServiceEnabled);
         servicePoints[GRILL_STATION] = new ServicePoint(
                 createGenerator(grillTime, variabilityEnabled),
                 eventList, EventType.MEAL_GRILL_DEP, "Grill Station");
@@ -37,6 +38,11 @@ public class ServicePointFactory {
         servicePoints[CASHIER_STATION] = new ServicePoint(
                 createGenerator(cashierTime, variabilityEnabled),
                 eventList, EventType.PAYMENT_CASHIER_DEP, "Cashier");
+
+        servicePoints[CASHIER_STATION_2] = new ServicePoint(
+                createGenerator(cashierTime, variabilityEnabled),
+                eventList, EventType.PAYMENT_CASHIER_DEP, "Cashier");
+
 
         servicePoints[SELF_SERVICE_STATION] = new ServicePoint(
                 createGenerator(selfServiceTime, variabilityEnabled),
