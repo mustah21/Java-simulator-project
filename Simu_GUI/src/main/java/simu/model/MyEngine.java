@@ -7,6 +7,7 @@ import simu.framework.Clock;
 import simu.framework.Engine;
 import simu.framework.Event;
 
+import java.io.IOException;
 
 
 public class MyEngine extends Engine {
@@ -22,18 +23,18 @@ public class MyEngine extends Engine {
     private ServicePoint selfServiceStation;
     private ServicePoint coffeeStation;
 
-
-
+    private volatile boolean paused = false;
+    private final Object pauseLock = new Object();
 
     private int maxQueueCapacity;
     private boolean arrivalsStopped = false;
-    
+
     // Statistics tracking
     private int customersServed = 0;
     private double totalWaitTime = 0.0;
     private int peakQueueLength = 0;
 
-    public MyEngine(IControllerMtoV controller, 
+    public MyEngine(IControllerMtoV controller,
                     double grillTime, double veganTime, double normalTime,
                     double cashierTime, double selfServiceTime, double coffeeTime,
                     boolean variabilityEnabled, boolean selfServiceEnabled, boolean coffeeEnabled,
@@ -75,21 +76,30 @@ public class MyEngine extends Engine {
         arrivalProcess.generateNext();     // First arrival in the system
     }
 
+    private void helperSleep() {
+        try {
+            Thread.sleep(5);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
     @Override
     protected void runEvent(Event t) {  // B phase events
         switch ((EventType) t.getType()) {
             case ARR1: {
                 Customer c = new Customer();
                 MealType mealType = c.getMealType();
-                
+                checkPaused();
+                helperSleep();
+
                 // Check if the target station has capacity before adding customer
-                ServicePoint targetStation = null;
-                switch (mealType) {
-                    case GRILL: targetStation = grillStation; break;
-                    case VEGAN: targetStation = veganStation; break;
-                    case NORMAL: targetStation = normalStation; break;
-                }
-                
+                ServicePoint targetStation = switch (mealType) {
+                    case GRILL -> grillStation;
+                    case VEGAN -> veganStation;
+                    case NORMAL -> normalStation;
+                };
+
                 // Only add customer if the target station has capacity
                 if (targetStation != null && targetStation.hasQueueCapacity(maxQueueCapacity)) {
                     targetStation.addQueue(c);
@@ -97,12 +107,12 @@ public class MyEngine extends Engine {
                     arrivalsStopped = false; // Reset flag since we successfully added a customer
                 }
                 // If target station is full, customer is rejected (not added)
-                
+
                 // Check if all first-row SPs are at max capacity
                 boolean allFull = !grillStation.hasQueueCapacity(maxQueueCapacity) &&
                                  !veganStation.hasQueueCapacity(maxQueueCapacity) &&
                                  !normalStation.hasQueueCapacity(maxQueueCapacity);
-                
+
                 // Only generate next arrival if not all stations are full
                 if (!allFull) {
                     arrivalProcess.generateNext();
@@ -110,7 +120,7 @@ public class MyEngine extends Engine {
                 } else {
                     arrivalsStopped = true;
                 }
-                
+
                 updateQueueDisplays();
                 break;
             }
@@ -166,17 +176,18 @@ public class MyEngine extends Engine {
                 Customer c = coffeeStation.removeQueue();
                 controller.visualiseCustomerExitFromCoffee();
                 c.setRemovalTime(Clock.getInstance().getTime());
-                
+
                 // Update statistics
                 customersServed++;
                 double totalTimeInSystem = c.getRemovalTime() - c.getArrivalTime();
                 totalWaitTime += totalTimeInSystem;
-                
+
                 c.reportResults();
                 updateQueueDisplays();
                 break;
             }
         }
+
     }
 
     protected void routeToPayment(Customer customer) {
@@ -205,6 +216,9 @@ public class MyEngine extends Engine {
             };
 
     }
+    protected void endSimulation() {
+
+    }
 
     private void routeAfterPayment(Customer customer) {
         if (ServicePointFactory.shouldVisitCoffeeStation(servicePoints, customer.isWantsCoffee())) {
@@ -214,28 +228,28 @@ public class MyEngine extends Engine {
         } else {
             controller.visualiseCustomerExitFromPayment(customer.getPaymentType());
             customer.setRemovalTime(Clock.getInstance().getTime());
-            
+
             // Update statistics for customers exiting without coffee
             customersServed++;
             double totalTimeInSystem = customer.getRemovalTime() - customer.getArrivalTime();
             totalWaitTime += totalTimeInSystem;
-            
+
             customer.reportResults();
         }
     }
-    
+
     private void checkAndResumeArrivals() {
         // Check if at least one first-row SP has capacity
         boolean atLeastOneHasCapacity = grillStation.hasQueueCapacity(maxQueueCapacity) ||
                                        veganStation.hasQueueCapacity(maxQueueCapacity) ||
                                        normalStation.hasQueueCapacity(maxQueueCapacity);
-        
+
         if (atLeastOneHasCapacity && arrivalsStopped) {
             arrivalsStopped = false;
             arrivalProcess.generateNext(); // Resume generating arrivals
         }
     }
-    
+
     private void updateQueueDisplays() {
         int grillQueue = grillStation.getQueueLength();
         int veganQueue = veganStation.getQueueLength();
@@ -243,7 +257,7 @@ public class MyEngine extends Engine {
         int cashierQueue = cashierStation.getQueueLength();
         int selfServiceQueue = selfServiceStation.getQueueLength();
         int coffeeQueue = coffeeStation.getQueueLength();
-        
+
         // Update peak queue length
         int currentMaxQueue = Math.max(Math.max(grillQueue, veganQueue), normalQueue);
         currentMaxQueue = Math.max(Math.max(currentMaxQueue, cashierQueue), selfServiceQueue);
@@ -251,36 +265,87 @@ public class MyEngine extends Engine {
         if (currentMaxQueue > peakQueueLength) {
             peakQueueLength = currentMaxQueue;
         }
-        
+
         controller.updateQueueDisplays(grillQueue, veganQueue, normalQueue,
                                       cashierQueue, selfServiceQueue, coffeeQueue);
-        
+
         // Update statistics
         updateStatistics();
     }
-    
+
     private void updateStatistics() {
         double currentTime = Clock.getInstance().getTime();
         double simulationHours = currentTime / 3600.0; // Convert seconds to hours
-        
+
         // Calculate throughput (customers per hour)
         double throughput = simulationHours > 0 ? customersServed / simulationHours : 0.0;
-        
+
         // Calculate average wait time (average time in system)
         double avgWaitTime = customersServed > 0 ? totalWaitTime / customersServed : 0.0;
-        
+
         // Update statistics display
         controller.updateStatistics(throughput, avgWaitTime, peakQueueLength, currentTime);
+
+    }
+    private SimulationStatistics getStatistics() {
+        double currentTime = Clock.getInstance().getTime();
+        double simulationHours = currentTime / 3600.0;
+
+        double throughput = simulationHours > 0
+                ? customersServed / simulationHours
+                : 0.0;
+
+        double avgWaitTime = customersServed > 0
+                ? totalWaitTime / customersServed
+                : 0.0;
+
+        return new SimulationStatistics(
+                customersServed,
+                throughput,
+                avgWaitTime,
+                peakQueueLength,
+                currentTime
+        );
     }
 
-    @Override
-    protected void results() {
-        controller.showEndTime(Clock.getInstance().getTime());
-    }
-    
+
+
     @Override
     protected void updateDisplays() {
         // Update queue displays periodically during simulation
         updateQueueDisplays();
     }
+    public void pause() {
+        paused = true;
+    }
+
+    public void resumeSimulation() {
+        synchronized (pauseLock) {
+            paused = false;
+            pauseLock.notifyAll();
+        }
+    }
+    private void checkPaused() {
+        synchronized (pauseLock) {
+            while (paused) {
+                try {
+                    pauseLock.wait();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+            }
+        }
+    }
+    @Override
+    protected void results() {
+        try {
+            CsvExporter.export(getStatistics(), "SimulationResults.csv");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        controller.showEndTime(Clock.getInstance().getTime());
+    }
+
 }

@@ -16,7 +16,9 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 public class Controller implements IControllerVtoM, IControllerMtoV, Initializable {
-	private IEngine engine;
+    private static final int MIN_DELAY = 1;
+    private static final long MAX_DELAY = 2000;  // 2 seconds
+    private IEngine engine;
 	private ISimulatorUI ui;
 	
 	// FXML UI Elements
@@ -42,7 +44,10 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 	@FXML private Label peakQueueLabel;
 	@FXML private Label simTimeLabel;
 	@FXML private Pane simulationCanvas;
-	
+	@FXML private Button btnIncreaseSpeed;
+    @FXML private Button btnDecreaseSpeed;
+
+
 	// Charts
 	@FXML private LineChart<Number, Number> queueChart;
 	@FXML private BarChart<String, Number> utilChart;
@@ -136,11 +141,18 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 		if (resumeBtn != null) {
 			resumeBtn.setOnAction(e -> resumeSimulation());
 		}
-		
-		// Initialize charts
+        if (btnIncreaseSpeed != null) {
+            btnIncreaseSpeed.setOnAction(e -> increaseSpeed());
+        }
+
+        if (btnDecreaseSpeed != null) {
+            btnDecreaseSpeed.setOnAction(e -> decreaseSpeed());
+        }
+
+        // Initialize charts
 		initializeCharts();
 	}
-	
+
 	private void initializeCharts() {
 		// Initialize queue chart
 		if (queueChart != null) {
@@ -250,7 +262,7 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 		);
 		
 		engine.setSimulationTime(simulationTime);
-		engine.setDelay(100); // Default delay in milliseconds
+		engine.setDelay(250); // Default delay in milliseconds
 		
 		// Clear visualization
 		if (ui != null && ui.getVisualisation() != null) {
@@ -329,20 +341,26 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 			engine.resumeSimulation();
 		}
 	}
-	
-	@Override
-	public void decreaseSpeed() { // hidastetaan moottorisäiettä
-		if (engine != null) {
-			engine.setDelay((long)(engine.getDelay()*1.10));
-		}
-	}
 
-	@Override
-	public void increaseSpeed() { // nopeutetaan moottorisäiettä
-		if (engine != null) {
-			engine.setDelay((long)(engine.getDelay()*0.9));
-		}
-	}
+    @Override
+    public void decreaseSpeed() {
+        if (engine != null) {
+            long newDelay = Math.min(MAX_DELAY, engine.getDelay() * 2);
+            engine.setDelay(newDelay);
+//            System.out.println("Speed decreased, delay  " + newDelay + " ms");
+        }
+    }
+
+
+    @Override
+    public void increaseSpeed() {
+        if (engine != null) {
+            long newDelay = Math.max(MIN_DELAY, engine.getDelay() / 2);
+            engine.setDelay(newDelay);
+//            System.out.println("Speed increased, delay  " + newDelay + " ms");
+        }
+    }
+
 
 
 	/* Simulation results passing to the UI

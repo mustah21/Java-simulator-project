@@ -55,12 +55,23 @@
     -fx-font-weight: 600;
 }
 
+.primary-button {
+    -fx-cursor: hand;
+
+}
+
 .secondary-button {
     -fx-background-color: transparent;
     -fx-border-color: rgba(11,26,58,0.08);
     -fx-text-fill: #0B1A3A;
     -fx-padding: 6 12 6 12;
     -fx-background-radius: 10;
+}
+
+.secondary-button:hover {
+    -fx-cursor: hand;
+    -fx-background-color: rgba(11,26,58,0.05);
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 1);
 }
 
 .ghost-button {
