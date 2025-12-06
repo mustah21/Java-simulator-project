@@ -196,154 +196,145 @@
 
             <Pane fx:id="simulationCanvas" prefHeight="520" prefWidth="600" styleClass="canvas">
                 <HBox layoutX="36.0" layoutY="94.0" prefHeight="57.0" prefWidth="128.0">
-                    <ProgressBar fx:id="veganQueueProgress" minHeight="-Infinity" minWidth="-Infinity"
-                                 prefHeight="18.0" prefWidth="54.0" progress="0.67" rotate="-90.0">
+                    <ProgressBar fx:id="veganQueueProgress" minHeight="-Infinity" minWidth="-Infinity" prefHeight="18.0" prefWidth="54.0" progress="0.0" rotate="-90.0">
                         <HBox.margin>
-                            <Insets left="-15.0" right="-22.0" top="19.0"/>
+                            <Insets left="-15.0" right="-22.0" top="19.0" />
                         </HBox.margin>
                     </ProgressBar>
                     <ImageView fitHeight="56.0" fitWidth="65.0" pickOnBounds="true" preserveRatio="true">
-                        <Image url="@buffet.png"/>
+                        <Image url="@buffet.png" />
                     </ImageView>
                     <VBox alignment="CENTER_LEFT" prefHeight="57.0" prefWidth="60.0">
                         <Label text="Vegan ">
                             <font>
-                                <Font size="15.0"/>
+                                <Font size="15.0" />
                             </font>
                         </Label>
-                        <Label fx:id="veganQueueLabel" text="Queue: 0 "/>
+                        <Label fx:id="veganQueueLabel" text="Queue: 0 " />
                     </VBox>
                 </HBox>
-                <Arc fill="DODGERBLUE" layoutX="260.0" layoutY="24.0" length="180.0" radiusX="28.0" radiusY="25.0"
-                     rotate="179.9" stroke="BLACK" strokeType="INSIDE" type="ROUND"/>
-                <Arc fill="RED" layoutX="50.0" layoutY="496.0" length="180.0" radiusX="28.0" radiusY="25.0"
-                     rotate="0.0" stroke="BLACK" strokeType="INSIDE" type="ROUND"/>
+                <Arc fill="DODGERBLUE" layoutX="260.0" layoutY="24.0" length="180.0" radiusX="28.0" radiusY="25.0" rotate="179.9" stroke="BLACK" strokeType="INSIDE" type="ROUND" />
+                <Arc fill="RED" layoutX="50.0" layoutY="496.0" length="180.0" radiusX="28.0" radiusY="25.0" rotate="0.0" stroke="BLACK" strokeType="INSIDE" type="ROUND" />
                 <HBox layoutX="204.0" layoutY="94.0" prefHeight="57.0" prefWidth="128.0">
-                    <ProgressBar fx:id="normalQueueProgress" minHeight="-Infinity" minWidth="-Infinity"
-                                 prefHeight="18.0" prefWidth="54.0" progress="0.67" rotate="-90.0">
+                    <ProgressBar fx:id="normalQueueProgress" minHeight="-Infinity" minWidth="-Infinity" prefHeight="18.0" prefWidth="54.0" progress="0.0" rotate="-90.0">
                         <HBox.margin>
-                            <Insets left="-15.0" right="-22.0" top="19.0"/>
+                            <Insets left="-15.0" right="-22.0" top="19.0" />
                         </HBox.margin>
                     </ProgressBar>
                     <ImageView fitHeight="56.0" fitWidth="65.0" pickOnBounds="true" preserveRatio="true">
-                        <Image url="@buffet.png"/>
+                        <Image url="@buffet.png" />
                     </ImageView>
                     <VBox alignment="CENTER_LEFT" prefHeight="57.0" prefWidth="60.0">
                         <Label text="Normal">
                             <font>
-                                <Font size="15.0"/>
+                                <Font size="15.0" />
                             </font>
                         </Label>
-                        <Label fx:id="normalQueueLabel" text="Queue: 0 "/>
+                        <Label fx:id="normalQueueLabel" text="Queue: 0 " />
                     </VBox>
                 </HBox>
                 <HBox layoutX="378.0" layoutY="94.0" prefHeight="57.0" prefWidth="128.0">
-                    <ProgressBar fx:id="grillQueueProgress" minHeight="-Infinity" minWidth="-Infinity"
-                                 prefHeight="18.0" prefWidth="54.0" progress="0.67" rotate="-90.0">
+                    <ProgressBar fx:id="grillQueueProgress" minHeight="-Infinity" minWidth="-Infinity" prefHeight="18.0" prefWidth="54.0" progress="0.0" rotate="-90.0">
                         <HBox.margin>
-                            <Insets left="-15.0" right="-22.0" top="19.0"/>
+                            <Insets left="-15.0" right="-22.0" top="19.0" />
                         </HBox.margin>
                     </ProgressBar>
                     <ImageView fitHeight="56.0" fitWidth="65.0" pickOnBounds="true" preserveRatio="true">
-                        <Image url="@buffet.png"/>
+                        <Image url="@buffet.png" />
                     </ImageView>
                     <VBox alignment="CENTER_LEFT" prefHeight="57.0" prefWidth="60.0">
                         <Label text="Grill">
                             <font>
-                                <Font size="15.0"/>
+                                <Font size="15.0" />
                             </font>
                         </Label>
-                        <Label fx:id="grillQueueLabel" text="Queue: 0 "/>
+                        <Label fx:id="grillQueueLabel" text="Queue: 0 " />
                     </VBox>
                 </HBox>
                 <HBox layoutX="36.0" layoutY="232.0" prefHeight="57.0" prefWidth="161.0">
-                    <ProgressBar fx:id="selfServiceQueueProgress" minHeight="-Infinity" minWidth="-Infinity"
-                                 prefHeight="18.0" prefWidth="54.0" progress="0.67" rotate="-90.0">
+                    <ProgressBar fx:id="selfServiceQueueProgress" minHeight="-Infinity" minWidth="-Infinity" prefHeight="18.0" prefWidth="54.0" progress="0.0" rotate="-90.0">
                         <HBox.margin>
-                            <Insets left="-15.0" right="-22.0" top="19.0"/>
+                            <Insets left="-15.0" right="-22.0" top="19.0" />
                         </HBox.margin>
                     </ProgressBar>
                     <ImageView fitHeight="56.0" fitWidth="65.0" pickOnBounds="true" preserveRatio="true">
                         <image>
-                            <Image url="@cash-machine.png"/>
+                            <Image url="@cash-machine.png" />
                         </image>
                         <HBox.margin>
-                            <Insets left="6.0"/>
+                            <Insets left="6.0" />
                         </HBox.margin>
                     </ImageView>
                     <VBox alignment="CENTER_LEFT" prefHeight="57.0" prefWidth="82.0">
                         <Label text="Self-service">
                             <font>
-                                <Font size="15.0"/>
+                                <Font size="15.0" />
                             </font>
                         </Label>
-                        <Label fx:id="selfServiceQueueLabel" text="Queue: 0 "/>
+                        <Label fx:id="selfServiceQueueLabel" text="Queue: 0 " />
                     </VBox>
                 </HBox>
                 <HBox layoutX="216.0" layoutY="238.0" prefHeight="57.0" prefWidth="144.0">
-                    <ProgressBar fx:id="cashierQueueProgress" minHeight="-Infinity" minWidth="-Infinity"
-                                 prefHeight="18.0" prefWidth="54.0" progress="0.67" rotate="-90.0">
+                    <ProgressBar fx:id="cashierQueueProgress" minHeight="-Infinity" minWidth="-Infinity" prefHeight="18.0" prefWidth="54.0" progress="0.0" rotate="-90.0">
                         <HBox.margin>
-                            <Insets left="-15.0" right="-22.0" top="19.0"/>
+                            <Insets left="-15.0" right="-22.0" top="19.0" />
                         </HBox.margin>
                     </ProgressBar>
                     <ImageView fitHeight="56.0" fitWidth="65.0" pickOnBounds="true" preserveRatio="true">
                         <HBox.margin>
-                            <Insets left="6.0"/>
+                            <Insets left="6.0" />
                         </HBox.margin>
-                        <Image url="@cashier.png"/>
+                        <Image url="@cashier.png" />
                     </ImageView>
                     <VBox alignment="CENTER_LEFT" prefHeight="57.0" prefWidth="60.0">
                         <Label text="Cashier">
                             <font>
-                                <Font size="15.0"/>
+                                <Font size="15.0" />
                             </font>
                         </Label>
-                        <Label fx:id="cashierQueueLabel1" text="Queue: 0 "/>
+                        <Label fx:id="cashierQueueLabel1" text="Queue: 0 " />
                     </VBox>
                 </HBox>
                 <HBox layoutX="378.0" layoutY="238.0" prefHeight="57.0" prefWidth="140.0">
-                    <ProgressBar fx:id="cashierQueueProgress2" minHeight="-Infinity" minWidth="-Infinity"
-                                 prefHeight="18.0" prefWidth="54.0" progress="0.67" rotate="-90.0">
+                    <ProgressBar fx:id="cashierQueueProgress2" minHeight="-Infinity" minWidth="-Infinity" prefHeight="18.0" prefWidth="54.0" progress="0.0" rotate="-90.0">
                         <HBox.margin>
-                            <Insets left="-15.0" right="-22.0" top="19.0"/>
+                            <Insets left="-15.0" right="-22.0" top="19.0" />
                         </HBox.margin>
                     </ProgressBar>
                     <ImageView fitHeight="56.0" fitWidth="65.0" pickOnBounds="true" preserveRatio="true">
                         <HBox.margin>
-                            <Insets left="6.0"/>
+                            <Insets left="6.0" />
                         </HBox.margin>
-                        <Image url="@cashier.png"/>
+                        <Image url="@cashier.png" />
                     </ImageView>
                     <VBox alignment="CENTER_LEFT" prefHeight="57.0" prefWidth="60.0">
                         <Label text="Cashier">
                             <font>
-                                <Font size="15.0"/>
+                                <Font size="15.0" />
                             </font>
                         </Label>
-                        <Label fx:id="cashierQueueLabel2" text="Queue: 0 "/>
+                        <Label fx:id="cashierQueueLabel2" text="Queue: 0 " />
                     </VBox>
                 </HBox>
                 <HBox layoutX="204.0" layoutY="376.0" prefHeight="57.0" prefWidth="142.0">
-                    <ProgressBar fx:id="coffeeQueueProgress" minHeight="-Infinity" minWidth="-Infinity"
-                                 prefHeight="18.0" prefWidth="54.0" progress="0.67" rotate="-90.0">
+                    <ProgressBar fx:id="coffeeQueueProgress" minHeight="-Infinity" minWidth="-Infinity" prefHeight="18.0" prefWidth="54.0" progress="0.0" rotate="-90.0">
                         <HBox.margin>
-                            <Insets left="-15.0" right="-22.0" top="19.0"/>
+                            <Insets left="-15.0" right="-22.0" top="19.0" />
                         </HBox.margin>
                     </ProgressBar>
                     <ImageView fitHeight="56.0" fitWidth="65.0" pickOnBounds="true" preserveRatio="true">
                         <HBox.margin>
-                            <Insets left="6.0"/>
+                            <Insets left="6.0" />
                         </HBox.margin>
-                        <Image url="@coffee-machine.png"/>
+                        <Image url="@coffee-machine.png" />
                     </ImageView>
                     <VBox alignment="CENTER_LEFT" prefHeight="57.0" prefWidth="60.0">
                         <Label text="Coffee">
                             <font>
-                                <Font size="15.0"/>
+                                <Font size="15.0" />
                             </font>
                         </Label>
-                        <Label fx:id="coffeeQueueLabel" text="Queue: 0 "/>
+                        <Label fx:id="coffeeQueueLabel" text="Queue: 0 " />
                     </VBox>
                 </HBox>
             </Pane>
