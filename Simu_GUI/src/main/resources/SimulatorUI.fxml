@@ -389,6 +389,15 @@
                 </VBox>
             </HBox>
 
+            <HBox spacing="10">
+                <VBox prefWidth="140" spacing="8" styleClass="metric-card">
+                    <Label styleClass="metric-title" text="Rejected"/>
+                    <Label fx:id="rejectedCustomersLabel" styleClass="metric-value" text="0"/>
+                </VBox>
+
+                <VBox prefWidth="140" spacing="8" styleClass="metric-card"/>
+            </HBox>
+
             <Label styleClass="small-heading" text="Queue Length Over Time"/>
             <LineChart fx:id="queueChart" prefHeight="160" prefWidth="280">
                 <xAxis>

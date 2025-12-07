@@ -43,6 +43,7 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 	@FXML private Label avgWaitLabel;
 	@FXML private Label peakQueueLabel;
 	@FXML private Label simTimeLabel;
+	@FXML private Label rejectedCustomersLabel;
 	@FXML private Pane simulationCanvas;
 	@FXML private Button btnIncreaseSpeed;
     @FXML private Button btnDecreaseSpeed;
@@ -312,6 +313,7 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 		if (avgWaitLabel != null) avgWaitLabel.setText("0 s");
 		if (peakQueueLabel != null) peakQueueLabel.setText("0");
 		if (simTimeLabel != null) simTimeLabel.setText("00:00");
+		if (rejectedCustomersLabel != null) rejectedCustomersLabel.setText("0");
 		
 		// Reset all progress bars to 0
 		updateQueueDisplays(0, 0, 0, 0, 0, 0, 0);
@@ -550,7 +552,7 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 	}
 	
 	@Override
-	public void updateStatistics(double throughput, double avgWaitTime, int peakQueue, double simTime) {
+	public void updateStatistics(double throughput, double avgWaitTime, int peakQueue, double simTime, int rejectedCustomers) {
 		Platform.runLater(() -> {
 			// Update throughput (customers per hour)
 			if (throughputLabel != null) {
@@ -574,6 +576,11 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 				int minutes = (totalSeconds % 3600) / 60;
 				int seconds = totalSeconds % 60;
 				simTimeLabel.setText(String.format("%02d:%02d:%02d", hours, minutes, seconds));
+			}
+			
+			// Update rejected customers count
+			if (rejectedCustomersLabel != null) {
+				rejectedCustomersLabel.setText(String.valueOf(rejectedCustomers));
 			}
 		});
 	}

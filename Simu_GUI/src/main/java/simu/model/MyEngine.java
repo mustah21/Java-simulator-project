@@ -33,6 +33,7 @@ public class MyEngine extends Engine {
     private int customersServed = 0;
     private double totalWaitTime = 0.0;
     private int peakQueueLength = 0;
+    private int rejectedCustomers = 0;
 
     public MyEngine(IControllerMtoV controller,
                     double grillTime, double veganTime, double normalTime,
@@ -105,8 +106,10 @@ public class MyEngine extends Engine {
                     targetStation.addQueue(c);
                     controller.visualiseCustomer(mealType);
                     arrivalsStopped = false; // Reset flag since we successfully added a customer
+                } else {
+                    // If target station is full, customer is rejected (not added)
+                    rejectedCustomers++;
                 }
-                // If target station is full, customer is rejected (not added)
 
                 // Check if all first-row SPs are at max capacity
                 boolean allFull = !grillStation.hasQueueCapacity(maxQueueCapacity) &&
@@ -229,18 +232,38 @@ public class MyEngine extends Engine {
         return cashierStationNumber;
     }
     protected int redirectToCashier(Customer customer) {
-            if(cashierStation.getQueueLength()<maxQueueCapacity){
+        // Load balance: route to cashier with shorter queue
+        int cashier1Queue = cashierStation.getQueueLength();
+        int cashier2Queue = cashierStation2.getQueueLength();
+        
+        // Check if both have capacity
+        boolean cashier1HasCapacity = cashierStation.hasQueueCapacity(maxQueueCapacity);
+        boolean cashier2HasCapacity = cashierStation2.hasQueueCapacity(maxQueueCapacity);
+        
+        // If only one has capacity, use that one
+        if (cashier1HasCapacity && !cashier2HasCapacity) {
+            cashierStation.addQueue(customer);
+            return 1;
+        }
+        if (cashier2HasCapacity && !cashier1HasCapacity) {
+            cashierStation2.addQueue(customer);
+            return 2;
+        }
+        
+        // If both have capacity, route to the one with shorter queue
+        if (cashier1HasCapacity && cashier2HasCapacity) {
+            if (cashier1Queue <= cashier2Queue) {
                 cashierStation.addQueue(customer);
                 return 1;
-        }
-            else if (cashierStation2.getQueueLength()<maxQueueCapacity){
+            } else {
                 cashierStation2.addQueue(customer);
                 return 2;
             }
-            else {
-                return 1; // Default to first cashier if both are full
-            }
-
+        }
+        
+        // If both are full, default to first cashier (customer will be rejected if capacity check fails)
+        cashierStation.addQueue(customer);
+        return 1;
     }
     protected void endSimulation() {
 
@@ -311,7 +334,7 @@ public class MyEngine extends Engine {
         double avgWaitTime = customersServed > 0 ? totalWaitTime / customersServed : 0.0;
 
         // Update statistics display
-        controller.updateStatistics(throughput, avgWaitTime, peakQueueLength, currentTime);
+        controller.updateStatistics(throughput, avgWaitTime, peakQueueLength, currentTime, rejectedCustomers);
 
     }
     private SimulationStatistics getStatistics() {
@@ -331,7 +354,8 @@ public class MyEngine extends Engine {
                 throughput,
                 avgWaitTime,
                 peakQueueLength,
-                currentTime
+                currentTime,
+                rejectedCustomers
         );
     }
 

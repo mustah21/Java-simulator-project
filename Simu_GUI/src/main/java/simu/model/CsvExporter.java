@@ -9,12 +9,14 @@ public class CsvExporter {
             throws IOException {
 
         try (FileWriter writer = new FileWriter(file)) {
-            writer.write("Customers,Throughput,AvgWait,PeakQueue,Time\n");
+            writer.write("Customers,Throughput,AvgWait,PeakQueue,Time,Rejected\n");
             writer.write(
                     stats.getCustomersServed() + "," +
                             stats.throughput + "," +
                             stats.getAverageWait() + "," +
-                            stats.peakQueueLength  );
+                            stats.peakQueueLength + "," +
+                            stats.getCurrentTime() + "," +
+                            stats.getRejectedCustomers());
         }
     }
 }
