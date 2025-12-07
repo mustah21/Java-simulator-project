@@ -33,8 +33,10 @@ public class Visualisation extends Canvas implements IVisualisation {
 	// Payment stations (middle row, y ~ 260)
 	private static final double SELF_SERVICE_X = 116.0;  // layoutX=36 + width/2
 	private static final double SELF_SERVICE_Y = 260.0;   // layoutY=232 + height/2
-	private static final double CASHIER_X = 288.0;       // layoutX=216 + width/2
+	private static final double CASHIER_X = 288.0;       // layoutX=216 + width/2 (first cashier)
 	private static final double CASHIER_Y = 267.0;       // layoutY=238 + height/2
+	private static final double CASHIER2_X = 448.0;      // layoutX=378 + width/2 (second cashier, width=140)
+	private static final double CASHIER2_Y = 267.0;      // layoutY=238 + height/2
 	
 	// Coffee station (bottom row, y ~ 404)
 	private static final double COFFEE_X = 275.0;        // layoutX=204 + width/2
@@ -116,17 +118,17 @@ public class Visualisation extends Canvas implements IVisualisation {
 		activeCustomers.add(customer);
 	}
 	
-	public void customerToPayment(MealType mealType, PaymentType paymentType) {
+	public void customerToPayment(MealType mealType, PaymentType paymentType, int cashierStationNumber) {
 		double[] startPos = getServicePointPosition(mealType);
-		double[] targetPos = getPaymentPosition(paymentType);
+		double[] targetPos = getPaymentPosition(paymentType, cashierStationNumber);
 		CustomerAnimation customer = new CustomerAnimation(
 			startPos[0], startPos[1], targetPos[0], targetPos[1], mealType
 		);
 		activeCustomers.add(customer);
 	}
 	
-	public void customerToCoffee(PaymentType paymentType) {
-		double[] startPos = getPaymentPosition(paymentType);
+	public void customerToCoffee(PaymentType paymentType, int cashierStationNumber) {
+		double[] startPos = getPaymentPosition(paymentType, cashierStationNumber);
 		CustomerAnimation customer = new CustomerAnimation(
 			startPos[0], startPos[1], COFFEE_X, COFFEE_Y, null
 		);
@@ -141,8 +143,8 @@ public class Visualisation extends Canvas implements IVisualisation {
 		activeCustomers.add(customer);
 	}
 	
-	public void customerExitFromPayment(PaymentType paymentType) {
-		double[] startPos = getPaymentPosition(paymentType);
+	public void customerExitFromPayment(PaymentType paymentType, int cashierStationNumber) {
+		double[] startPos = getPaymentPosition(paymentType, cashierStationNumber);
 		// Exit point - move to exit circle at bottom
 		CustomerAnimation customer = new CustomerAnimation(
 			startPos[0], startPos[1], EXIT_X, EXIT_Y, null
@@ -150,11 +152,16 @@ public class Visualisation extends Canvas implements IVisualisation {
 		activeCustomers.add(customer);
 	}
 	
-	private double[] getPaymentPosition(PaymentType paymentType) {
+	private double[] getPaymentPosition(PaymentType paymentType, int cashierStationNumber) {
 		if (paymentType == PaymentType.SELF_SERVICE) {
 			return new double[]{SELF_SERVICE_X, SELF_SERVICE_Y};
 		} else {
-			return new double[]{CASHIER_X, CASHIER_Y};
+			// Route to the correct cashier station (1 or 2)
+			if (cashierStationNumber == 2) {
+				return new double[]{CASHIER2_X, CASHIER2_Y};
+			} else {
+				return new double[]{CASHIER_X, CASHIER_Y};
+			}
 		}
 	}
 	

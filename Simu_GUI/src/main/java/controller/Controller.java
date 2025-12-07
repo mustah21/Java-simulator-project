@@ -314,7 +314,7 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 		if (simTimeLabel != null) simTimeLabel.setText("00:00");
 		
 		// Reset all progress bars to 0
-		updateQueueDisplays(0, 0, 0, 0, 0, 0);
+		updateQueueDisplays(0, 0, 0, 0, 0, 0, 0);
 		
 		// Clear charts and reset data collection
 		if (queueChart != null && totalQueueSeries != null) {
@@ -402,16 +402,16 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 	}
 	
 	@Override
-	public void visualiseCustomerToPayment(simu.model.MealType mealType, simu.model.PaymentType paymentType) {
+	public void visualiseCustomerToPayment(simu.model.MealType mealType, simu.model.PaymentType paymentType, int cashierStationNumber) {
 		if (ui != null) {
-			Platform.runLater(() -> ui.getVisualisation().customerToPayment(mealType, paymentType));
+			Platform.runLater(() -> ui.getVisualisation().customerToPayment(mealType, paymentType, cashierStationNumber));
 		}
 	}
 	
 	@Override
-	public void visualiseCustomerToCoffee(simu.model.PaymentType paymentType) {
+	public void visualiseCustomerToCoffee(simu.model.PaymentType paymentType, int cashierStationNumber) {
 		if (ui != null) {
-			Platform.runLater(() -> ui.getVisualisation().customerToCoffee(paymentType));
+			Platform.runLater(() -> ui.getVisualisation().customerToCoffee(paymentType, cashierStationNumber));
 		}
 	}
 	
@@ -423,15 +423,15 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 	}
 	
 	@Override
-	public void visualiseCustomerExitFromPayment(simu.model.PaymentType paymentType) {
+	public void visualiseCustomerExitFromPayment(simu.model.PaymentType paymentType, int cashierStationNumber) {
 		if (ui != null) {
-			Platform.runLater(() -> ui.getVisualisation().customerExitFromPayment(paymentType));
+			Platform.runLater(() -> ui.getVisualisation().customerExitFromPayment(paymentType, cashierStationNumber));
 		}
 	}
 	
 	@Override
 	public void updateQueueDisplays(int grillQueue, int veganQueue, int normalQueue,
-	                                int cashierQueue, int selfServiceQueue, int coffeeQueue) {
+	                                int cashierQueue, int cashierQueue2, int selfServiceQueue, int coffeeQueue) {
 		Platform.runLater(() -> {
 			// Update progress bars (assuming max capacity of 20 for visualization)
 			// Progress bars are rotated -90 degrees, so they fill from bottom to top
@@ -441,7 +441,7 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 			updateProgressBar(veganQueueProgress, veganQueue, maxCapacity);
 			updateProgressBar(normalQueueProgress, normalQueue, maxCapacity);
 			updateProgressBar(cashierQueueProgress, cashierQueue, maxCapacity);
-			updateProgressBar(cashierQueueProgress2, cashierQueue, maxCapacity);
+			updateProgressBar(cashierQueueProgress2, cashierQueue2, maxCapacity);
 			updateProgressBar(selfServiceQueueProgress, selfServiceQueue, maxCapacity);
 			updateProgressBar(coffeeQueueProgress, coffeeQueue, maxCapacity);
 			
@@ -459,7 +459,7 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 				cashierQueueLabel1.setText("Queue: " + cashierQueue);
 			}
 			if (cashierQueueLabel2 != null) {
-				cashierQueueLabel2.setText("Queue: " + cashierQueue);
+				cashierQueueLabel2.setText("Queue: " + cashierQueue2);
 			}
 			if (selfServiceQueueLabel != null) {
 				selfServiceQueueLabel.setText("Queue: " + selfServiceQueue);
@@ -469,18 +469,18 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 			}
 			
 			// Collect data for charts (but don't update display until simulation ends)
-			collectChartData(grillQueue, veganQueue, normalQueue, cashierQueue, selfServiceQueue, coffeeQueue);
+			collectChartData(grillQueue, veganQueue, normalQueue, cashierQueue, cashierQueue2, selfServiceQueue, coffeeQueue);
 		});
 	}
 	
 	// Collect chart data during simulation (but don't update display)
 	private void collectChartData(int grillQueue, int veganQueue, int normalQueue,
-	                              int cashierQueue, int selfServiceQueue, int coffeeQueue) {
+	                              int cashierQueue, int cashierQueue2, int selfServiceQueue, int coffeeQueue) {
 		// Get current simulation time (in seconds)
 		double currentTime = simu.framework.Clock.getInstance().getTime();
 		
-		// Calculate total queue length
-		int totalQueue = grillQueue + veganQueue + normalQueue + cashierQueue + selfServiceQueue + coffeeQueue;
+		// Calculate total queue length (combine both cashier queues for total)
+		int totalQueue = grillQueue + veganQueue + normalQueue + cashierQueue + cashierQueue2 + selfServiceQueue + coffeeQueue;
 		
 		// Collect data points for queue chart at every update to get full simulation data
 		// Only skip if time hasn't changed (avoid duplicate points at same time)
@@ -488,14 +488,17 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 			queueHistory.add(new ChartDataPoint(currentTime, totalQueue));
 			
 			// Also collect utilization data (queue lengths for each station)
-			int[] queueLengths = new int[]{grillQueue, veganQueue, normalQueue, cashierQueue, selfServiceQueue, coffeeQueue};
+			// Combine both cashier queues for utilization chart (using average or sum)
+			int combinedCashierQueue = cashierQueue + cashierQueue2;
+			int[] queueLengths = new int[]{grillQueue, veganQueue, normalQueue, combinedCashierQueue, selfServiceQueue, coffeeQueue};
 			utilizationHistory.add(new UtilizationDataPoint(currentTime, queueLengths));
 			
 			lastCollectionTime = currentTime;
 		}
 		
-		// Store latest queue data for utilization chart
-		latestQueueData = new int[]{grillQueue, veganQueue, normalQueue, cashierQueue, selfServiceQueue, coffeeQueue};
+		// Store latest queue data for utilization chart (combine cashier queues)
+		int combinedCashierQueue = cashierQueue + cashierQueue2;
+		latestQueueData = new int[]{grillQueue, veganQueue, normalQueue, combinedCashierQueue, selfServiceQueue, coffeeQueue};
 	}
 	
 	// Update charts only at the end of simulation

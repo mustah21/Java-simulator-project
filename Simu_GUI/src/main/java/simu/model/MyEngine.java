@@ -127,8 +127,8 @@ public class MyEngine extends Engine {
 
             case MEAL_GRILL_DEP: {
                 Customer c = grillStation.removeQueue();
-                controller.visualiseCustomerToPayment(c.getMealType(), c.getPaymentType());
-                routeToPayment(c);
+                int cashierStation = routeToPayment(c);
+                controller.visualiseCustomerToPayment(c.getMealType(), c.getPaymentType(), cashierStation);
                 // Resume arrivals if they were stopped and now capacity is available
                 if (arrivalsStopped && grillStation.hasQueueCapacity(maxQueueCapacity)) {
                     checkAndResumeArrivals();
@@ -138,8 +138,8 @@ public class MyEngine extends Engine {
             }
             case MEAL_VEGAN_DEP: {
                 Customer c = veganStation.removeQueue();
-                controller.visualiseCustomerToPayment(c.getMealType(), c.getPaymentType());
-                routeToPayment(c);
+                int cashierStation = routeToPayment(c);
+                controller.visualiseCustomerToPayment(c.getMealType(), c.getPaymentType(), cashierStation);
                 // Resume arrivals if they were stopped and now capacity is available
                 if (arrivalsStopped && veganStation.hasQueueCapacity(maxQueueCapacity)) {
                     checkAndResumeArrivals();
@@ -149,8 +149,8 @@ public class MyEngine extends Engine {
             }
             case MEAL_NORMAL_DEP: {
                 Customer c = normalStation.removeQueue();
-                controller.visualiseCustomerToPayment(c.getMealType(), c.getPaymentType());
-                routeToPayment(c);
+                int cashierStation = routeToPayment(c);
+                controller.visualiseCustomerToPayment(c.getMealType(), c.getPaymentType(), cashierStation);
                 // Resume arrivals if they were stopped and now capacity is available
                 if (arrivalsStopped && normalStation.hasQueueCapacity(maxQueueCapacity)) {
                     checkAndResumeArrivals();
@@ -160,14 +160,32 @@ public class MyEngine extends Engine {
             }
 
             case PAYMENT_CASHIER_DEP: {
-                Customer c = cashierStation.removeQueue();
-                routeAfterPayment(c);
+                // Check both cashier stations and remove from whichever is currently serving (reserved)
+                // If both or neither are reserved, check which has customers
+                Customer c = null;
+                int cashierStationNumber = 1; // Default to first cashier
+                if (cashierStation.isReserved() && cashierStation.isOnQueue()) {
+                    c = cashierStation.removeQueue();
+                    cashierStationNumber = 1;
+                } else if (cashierStation2.isReserved() && cashierStation2.isOnQueue()) {
+                    c = cashierStation2.removeQueue();
+                    cashierStationNumber = 2;
+                } else if (cashierStation.isOnQueue()) {
+                    c = cashierStation.removeQueue();
+                    cashierStationNumber = 1;
+                } else if (cashierStation2.isOnQueue()) {
+                    c = cashierStation2.removeQueue();
+                    cashierStationNumber = 2;
+                }
+                if (c != null) {
+                    routeAfterPayment(c, cashierStationNumber);
+                }
                 updateQueueDisplays();
                 break;
             }
             case PAYMENT_SELF_DEP: {
                 Customer c = selfServiceStation.removeQueue();
-                routeAfterPayment(c);
+                routeAfterPayment(c, 0); // 0 indicates self-service
                 updateQueueDisplays();
                 break;
             }
@@ -190,43 +208,51 @@ public class MyEngine extends Engine {
 
     }
 
-    protected void routeToPayment(Customer customer) {
+    protected int routeToPayment(Customer customer) {
+        int cashierStationNumber = 0; // 0 = self-service, 1 = cashier1, 2 = cashier2
         switch (customer.getPaymentType()) {
             case SELF_SERVICE:
-                if (selfServiceStation.isEnabled()) selfServiceStation.addQueue(customer);
-                else cashierStation.addQueue(customer);
+                if (selfServiceStation.isEnabled()) {
+                    selfServiceStation.addQueue(customer);
+                    cashierStationNumber = 0;
+                } else {
+                    cashierStation.addQueue(customer);
+                    cashierStationNumber = 1;
+                }
                 break;
             case CASHIER:
-                redirectToCashier(customer);
+                cashierStationNumber = redirectToCashier(customer);
                 break;
         }
 
         updateQueueDisplays();
+        return cashierStationNumber;
     }
-    protected void redirectToCashier(Customer customer) {
+    protected int redirectToCashier(Customer customer) {
             if(cashierStation.getQueueLength()<maxQueueCapacity){
-            cashierStation.addQueue(customer);
-
+                cashierStation.addQueue(customer);
+                return 1;
         }
             else if (cashierStation2.getQueueLength()<maxQueueCapacity){
                 cashierStation2.addQueue(customer);
+                return 2;
             }
             else {
-                return;
-            };
+                return 1; // Default to first cashier if both are full
+            }
 
     }
     protected void endSimulation() {
 
     }
 
-    private void routeAfterPayment(Customer customer) {
+    private void routeAfterPayment(Customer customer, int cashierStationNumber) {
         if (ServicePointFactory.shouldVisitCoffeeStation(servicePoints, customer.isWantsCoffee())) {
-            controller.visualiseCustomerToCoffee(customer.getPaymentType());
+            controller.visualiseCustomerToCoffee(customer.getPaymentType(), cashierStationNumber);
             coffeeStation.addQueue(customer);
             updateQueueDisplays();
         } else {
-            controller.visualiseCustomerExitFromPayment(customer.getPaymentType());
+            controller.visualiseCustomerExitFromPayment(customer.getPaymentType(), cashierStationNumber);
             customer.setRemovalTime(Clock.getInstance().getTime());
 
             // Update statistics for customers exiting without coffee
@@ -255,19 +281,20 @@ public class MyEngine extends Engine {
         int veganQueue = veganStation.getQueueLength();
         int normalQueue = normalStation.getQueueLength();
         int cashierQueue = cashierStation.getQueueLength();
+        int cashierQueue2 = cashierStation2.getQueueLength();
         int selfServiceQueue = selfServiceStation.getQueueLength();
         int coffeeQueue = coffeeStation.getQueueLength();
 
         // Update peak queue length
         int currentMaxQueue = Math.max(Math.max(grillQueue, veganQueue), normalQueue);
-        currentMaxQueue = Math.max(Math.max(currentMaxQueue, cashierQueue), selfServiceQueue);
-        currentMaxQueue = Math.max(currentMaxQueue, coffeeQueue);
+        currentMaxQueue = Math.max(Math.max(currentMaxQueue, cashierQueue), cashierQueue2);
+        currentMaxQueue = Math.max(Math.max(currentMaxQueue, selfServiceQueue), coffeeQueue);
         if (currentMaxQueue > peakQueueLength) {
             peakQueueLength = currentMaxQueue;
         }
 
         controller.updateQueueDisplays(grillQueue, veganQueue, normalQueue,
-                                      cashierQueue, selfServiceQueue, coffeeQueue);
+                                      cashierQueue, cashierQueue2, selfServiceQueue, coffeeQueue);
 
         // Update statistics
         updateStatistics();
