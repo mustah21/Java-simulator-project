@@ -33,12 +33,12 @@ public class Visualisation2 extends Canvas implements IVisualisation {
 	}
 	
 	@Override
-	public void customerToPayment(MealType mealType, PaymentType paymentType) {
+	public void customerToPayment(MealType mealType, PaymentType paymentType, int cashierStationNumber) {
 		// Stub implementation for Visualisation2
 	}
 	
 	@Override
-	public void customerToCoffee(PaymentType paymentType) {
+	public void customerToCoffee(PaymentType paymentType, int cashierStationNumber) {
 		// Stub implementation for Visualisation2
 	}
 	
@@ -48,7 +48,7 @@ public class Visualisation2 extends Canvas implements IVisualisation {
 	}
 	
 	@Override
-	public void customerExitFromPayment(PaymentType paymentType) {
+	public void customerExitFromPayment(PaymentType paymentType, int cashierStationNumber) {
 		// Stub implementation for Visualisation2
 	}
 }
