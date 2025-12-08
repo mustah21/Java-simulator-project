@@ -328,6 +328,19 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 		if (utilChart != null) {
 			utilChart.getData().clear();
 		}
+		
+		if (openingHoursField != null) openingHoursField.setText("3.0");
+		if (arrivalSlider != null) arrivalSlider.setValue(120.0);
+		if (grillTime != null) grillTime.setText("45.0");
+		if (veganTime != null) veganTime.setText("40.0");
+		if (normalTime != null) normalTime.setText("30.0");
+		if (cashierTime != null) cashierTime.setText("20.0");
+		if (selfServiceTime != null) selfServiceTime.setText("12.0");
+		if (coffeeTime != null) coffeeTime.setText("10.0");
+		if (enableSelfService != null) enableSelfService.setSelected(true);
+		if (coffeeOptional != null) coffeeOptional.setSelected(true);
+		if (queueCapacity != null) queueCapacity.setValue("Unlimited");
+		if (variabilityToggle != null) variabilityToggle.setSelected(false);
 	}
 	
 	private void pauseSimulation() {
@@ -473,22 +486,25 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 		});
 	}
 	
-	// Collect chart data during simulation (but don't update display)
 	private void collectChartData(int grillQueue, int veganQueue, int normalQueue,
 	                              int cashierQueue, int cashierQueue2, int selfServiceQueue, int coffeeQueue) {
-		// Get current simulation time (in seconds)
 		double currentTime = simu.framework.Clock.getInstance().getTime();
 		
-		// Calculate total queue length (combine both cashier queues for total)
 		int totalQueue = grillQueue + veganQueue + normalQueue + cashierQueue + cashierQueue2 + selfServiceQueue + coffeeQueue;
 		
-		// Collect data points for queue chart at every update to get full simulation data
-		// Only skip if time hasn't changed (avoid duplicate points at same time)
 		if (currentTime != lastCollectionTime) {
 			queueHistory.add(new ChartDataPoint(currentTime, totalQueue));
 			
-			// Also collect utilization data (queue lengths for each station)
-			// Combine both cashier queues for utilization chart (using average or sum)
+			if (queueChart != null && totalQueueSeries != null) {
+				Platform.runLater(() -> {
+					totalQueueSeries.getData().add(new XYChart.Data<>(currentTime, totalQueue));
+					
+					if (totalQueueSeries.getData().size() > 1000) {
+						totalQueueSeries.getData().remove(0);
+					}
+				});
+			}
+			
 			int combinedCashierQueue = cashierQueue + cashierQueue2;
 			int[] queueLengths = new int[]{grillQueue, veganQueue, normalQueue, combinedCashierQueue, selfServiceQueue, coffeeQueue};
 			utilizationHistory.add(new UtilizationDataPoint(currentTime, queueLengths));
@@ -496,7 +512,6 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 			lastCollectionTime = currentTime;
 		}
 		
-		// Store latest queue data for utilization chart (combine cashier queues)
 		int combinedCashierQueue = cashierQueue + cashierQueue2;
 		latestQueueData = new int[]{grillQueue, veganQueue, normalQueue, combinedCashierQueue, selfServiceQueue, coffeeQueue};
 	}
@@ -552,28 +567,44 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 	@Override
 	public void updateStatistics(double throughput, double avgWaitTime, int peakQueue, double simTime) {
 		Platform.runLater(() -> {
-			// Update throughput (customers per hour)
 			if (throughputLabel != null) {
 				throughputLabel.setText(String.format("%.1f students/hr", throughput));
 			}
 			
-			// Update average wait time (in seconds)
 			if (avgWaitLabel != null) {
 				avgWaitLabel.setText(String.format("%.1f s", avgWaitTime));
 			}
 			
-			// Update peak queue length
 			if (peakQueueLabel != null) {
 				peakQueueLabel.setText(String.valueOf(peakQueue));
 			}
 			
-			// Update simulation time (format as HH:MM:SS)
 			if (simTimeLabel != null) {
 				int totalSeconds = (int)simTime;
 				int hours = totalSeconds / 3600;
 				int minutes = (totalSeconds % 3600) / 60;
 				int seconds = totalSeconds % 60;
 				simTimeLabel.setText(String.format("%02d:%02d:%02d", hours, minutes, seconds));
+			}
+		});
+	}
+	
+	@Override
+	public void updateUtilization(double[] utilizationPercentages, double simTime) {
+		Platform.runLater(() -> {
+			if (utilChart != null && utilizationPercentages != null && utilizationPercentages.length >= 6) {
+				utilChart.getData().clear();
+				
+				XYChart.Series<String, Number> series = new XYChart.Series<>();
+				
+				series.getData().add(new XYChart.Data<>("Grill", Math.min(100.0, utilizationPercentages[0])));
+				series.getData().add(new XYChart.Data<>("Vegan", Math.min(100.0, utilizationPercentages[1])));
+				series.getData().add(new XYChart.Data<>("Normal", Math.min(100.0, utilizationPercentages[2])));
+				series.getData().add(new XYChart.Data<>("Cashier", Math.min(100.0, utilizationPercentages[3])));
+				series.getData().add(new XYChart.Data<>("Self-Svc", Math.min(100.0, utilizationPercentages[4])));
+				series.getData().add(new XYChart.Data<>("Coffee", Math.min(100.0, utilizationPercentages[5])));
+				
+				utilChart.getData().add(series);
 			}
 		});
 	}

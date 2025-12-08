@@ -23,9 +23,6 @@ public class MyEngine extends Engine {
     private ServicePoint selfServiceStation;
     private ServicePoint coffeeStation;
 
-    private volatile boolean paused = false;
-    private final Object pauseLock = new Object();
-
     private int maxQueueCapacity;
     private boolean arrivalsStopped = false;
 
@@ -33,6 +30,7 @@ public class MyEngine extends Engine {
     private int customersServed = 0;
     private double totalWaitTime = 0.0;
     private int peakQueueLength = 0;
+    private int customersRejected = 0;
 
     public MyEngine(IControllerMtoV controller,
                     double grillTime, double veganTime, double normalTime,
@@ -90,7 +88,6 @@ public class MyEngine extends Engine {
             case ARR1: {
                 Customer c = new Customer();
                 MealType mealType = c.getMealType();
-                checkPaused();
                 helperSleep();
 
                 // Check if the target station has capacity before adding customer
@@ -102,11 +99,20 @@ public class MyEngine extends Engine {
 
                 // Only add customer if the target station has capacity
                 if (targetStation != null && targetStation.hasQueueCapacity(maxQueueCapacity)) {
+                    double arrivalTime = Clock.getInstance().getTime();
                     targetStation.addQueue(c);
+                    
+                    c.markServiceStart(ServicePointType.MEAL, arrivalTime);
+                    
+                    if (!targetStation.isReserved() && targetStation.isOnQueue()) {
+                        targetStation.beginService();
+                    }
+                    
                     controller.visualiseCustomer(mealType);
-                    arrivalsStopped = false; // Reset flag since we successfully added a customer
+                    arrivalsStopped = false;
+                } else {
+                    customersRejected++;
                 }
-                // If target station is full, customer is rejected (not added)
 
                 // Check if all first-row SPs are at max capacity
                 boolean allFull = !grillStation.hasQueueCapacity(maxQueueCapacity) &&
@@ -126,10 +132,17 @@ public class MyEngine extends Engine {
             }
 
             case MEAL_GRILL_DEP: {
+                double serviceEndTime = Clock.getInstance().getTime();
                 Customer c = grillStation.removeQueue();
+                
+                c.markServiceEnd(ServicePointType.MEAL, serviceEndTime);
+                
+                if (grillStation.isOnQueue() && !grillStation.isReserved()) {
+                    grillStation.beginService();
+                }
+                
                 int cashierStation = routeToPayment(c);
                 controller.visualiseCustomerToPayment(c.getMealType(), c.getPaymentType(), cashierStation);
-                // Resume arrivals if they were stopped and now capacity is available
                 if (arrivalsStopped && grillStation.hasQueueCapacity(maxQueueCapacity)) {
                     checkAndResumeArrivals();
                 }
@@ -137,10 +150,17 @@ public class MyEngine extends Engine {
                 break;
             }
             case MEAL_VEGAN_DEP: {
+                double serviceEndTime = Clock.getInstance().getTime();
                 Customer c = veganStation.removeQueue();
+                
+                c.markServiceEnd(ServicePointType.MEAL, serviceEndTime);
+                
+                if (veganStation.isOnQueue() && !veganStation.isReserved()) {
+                    veganStation.beginService();
+                }
+                
                 int cashierStation = routeToPayment(c);
                 controller.visualiseCustomerToPayment(c.getMealType(), c.getPaymentType(), cashierStation);
-                // Resume arrivals if they were stopped and now capacity is available
                 if (arrivalsStopped && veganStation.hasQueueCapacity(maxQueueCapacity)) {
                     checkAndResumeArrivals();
                 }
@@ -148,10 +168,17 @@ public class MyEngine extends Engine {
                 break;
             }
             case MEAL_NORMAL_DEP: {
+                double serviceEndTime = Clock.getInstance().getTime();
                 Customer c = normalStation.removeQueue();
+                
+                c.markServiceEnd(ServicePointType.MEAL, serviceEndTime);
+                
+                if (normalStation.isOnQueue() && !normalStation.isReserved()) {
+                    normalStation.beginService();
+                }
+                
                 int cashierStation = routeToPayment(c);
                 controller.visualiseCustomerToPayment(c.getMealType(), c.getPaymentType(), cashierStation);
-                // Resume arrivals if they were stopped and now capacity is available
                 if (arrivalsStopped && normalStation.hasQueueCapacity(maxQueueCapacity)) {
                     checkAndResumeArrivals();
                 }
@@ -160,42 +187,69 @@ public class MyEngine extends Engine {
             }
 
             case PAYMENT_CASHIER_DEP: {
-                // Check both cashier stations and remove from whichever is currently serving (reserved)
-                // If both or neither are reserved, check which has customers
                 Customer c = null;
-                int cashierStationNumber = 1; // Default to first cashier
+                int cashierStationNumber = 1;
+                ServicePoint completedStation = null;
+                double serviceEndTime = Clock.getInstance().getTime();
+                
                 if (cashierStation.isReserved() && cashierStation.isOnQueue()) {
                     c = cashierStation.removeQueue();
+                    completedStation = cashierStation;
                     cashierStationNumber = 1;
                 } else if (cashierStation2.isReserved() && cashierStation2.isOnQueue()) {
                     c = cashierStation2.removeQueue();
+                    completedStation = cashierStation2;
                     cashierStationNumber = 2;
                 } else if (cashierStation.isOnQueue()) {
                     c = cashierStation.removeQueue();
+                    completedStation = cashierStation;
                     cashierStationNumber = 1;
                 } else if (cashierStation2.isOnQueue()) {
                     c = cashierStation2.removeQueue();
+                    completedStation = cashierStation2;
                     cashierStationNumber = 2;
                 }
-                if (c != null) {
+                
+                if (c != null && completedStation != null) {
+                    c.markServiceEnd(ServicePointType.CASHIER, serviceEndTime);
+                    
+                    if (completedStation.isOnQueue() && !completedStation.isReserved()) {
+                        completedStation.beginService();
+                    }
+                    
                     routeAfterPayment(c, cashierStationNumber);
                 }
                 updateQueueDisplays();
                 break;
             }
             case PAYMENT_SELF_DEP: {
+                double serviceEndTime = Clock.getInstance().getTime();
                 Customer c = selfServiceStation.removeQueue();
-                routeAfterPayment(c, 0); // 0 indicates self-service
+                
+                c.markServiceEnd(ServicePointType.SELF_SERVICE, serviceEndTime);
+                
+                if (selfServiceStation.isOnQueue() && !selfServiceStation.isReserved()) {
+                    selfServiceStation.beginService();
+                }
+                
+                routeAfterPayment(c, 0);
                 updateQueueDisplays();
                 break;
             }
 
             case COFFEE_DEP: {
+                double serviceEndTime = Clock.getInstance().getTime();
                 Customer c = coffeeStation.removeQueue();
+                
+                c.markServiceEnd(ServicePointType.COFFEE, serviceEndTime);
+                
+                if (coffeeStation.isOnQueue() && !coffeeStation.isReserved()) {
+                    coffeeStation.beginService();
+                }
+                
                 controller.visualiseCustomerExitFromCoffee();
                 c.setRemovalTime(Clock.getInstance().getTime());
 
-                // Update statistics
                 customersServed++;
                 double totalTimeInSystem = c.getRemovalTime() - c.getArrivalTime();
                 totalWaitTime += totalTimeInSystem;
@@ -209,19 +263,37 @@ public class MyEngine extends Engine {
     }
 
     protected int routeToPayment(Customer customer) {
-        int cashierStationNumber = 0; // 0 = self-service, 1 = cashier1, 2 = cashier2
+        int cashierStationNumber = 0;
+        double arrivalTime = Clock.getInstance().getTime();
+        ServicePoint paymentStation = null;
+        
         switch (customer.getPaymentType()) {
             case SELF_SERVICE:
                 if (selfServiceStation.isEnabled()) {
                     selfServiceStation.addQueue(customer);
+                    paymentStation = selfServiceStation;
                     cashierStationNumber = 0;
+                    customer.markServiceStart(ServicePointType.SELF_SERVICE, arrivalTime);
+                    if (!selfServiceStation.isReserved() && selfServiceStation.isOnQueue()) {
+                        selfServiceStation.beginService();
+                    }
                 } else {
                     cashierStation.addQueue(customer);
+                    paymentStation = cashierStation;
                     cashierStationNumber = 1;
+                    customer.markServiceStart(ServicePointType.CASHIER, arrivalTime);
+                    if (!cashierStation.isReserved() && cashierStation.isOnQueue()) {
+                        cashierStation.beginService();
+                    }
                 }
                 break;
             case CASHIER:
                 cashierStationNumber = redirectToCashier(customer);
+                paymentStation = (cashierStationNumber == 1) ? cashierStation : cashierStation2;
+                customer.markServiceStart(ServicePointType.CASHIER, arrivalTime);
+                if (paymentStation != null && !paymentStation.isReserved() && paymentStation.isOnQueue()) {
+                    paymentStation.beginService();
+                }
                 break;
         }
 
@@ -229,18 +301,31 @@ public class MyEngine extends Engine {
         return cashierStationNumber;
     }
     protected int redirectToCashier(Customer customer) {
-            if(cashierStation.getQueueLength()<maxQueueCapacity){
-                cashierStation.addQueue(customer);
-                return 1;
+        int queue1 = cashierStation.getQueueLength();
+        int queue2 = cashierStation2.getQueueLength();
+        
+        ServicePoint targetStation;
+        int stationNumber;
+        
+        if (queue1 < queue2 && queue1 < maxQueueCapacity) {
+            targetStation = cashierStation;
+            stationNumber = 1;
+        } else if (queue2 < maxQueueCapacity) {
+            targetStation = cashierStation2;
+            stationNumber = 2;
+        } else if (queue1 < maxQueueCapacity) {
+            targetStation = cashierStation;
+            stationNumber = 1;
+        } else {
+            targetStation = cashierStation;
+            stationNumber = 1;
         }
-            else if (cashierStation2.getQueueLength()<maxQueueCapacity){
-                cashierStation2.addQueue(customer);
-                return 2;
-            }
-            else {
-                return 1; // Default to first cashier if both are full
-            }
-
+        
+        targetStation.addQueue(customer);
+        if (!targetStation.isReserved() && targetStation.isOnQueue()) {
+            targetStation.beginService();
+        }
+        return stationNumber;
     }
     protected void endSimulation() {
 
@@ -248,14 +333,21 @@ public class MyEngine extends Engine {
 
     private void routeAfterPayment(Customer customer, int cashierStationNumber) {
         if (ServicePointFactory.shouldVisitCoffeeStation(servicePoints, customer.isWantsCoffee())) {
+            double arrivalTime = Clock.getInstance().getTime();
             controller.visualiseCustomerToCoffee(customer.getPaymentType(), cashierStationNumber);
             coffeeStation.addQueue(customer);
+            
+            customer.markServiceStart(ServicePointType.COFFEE, arrivalTime);
+            
+            if (!coffeeStation.isReserved() && coffeeStation.isOnQueue()) {
+                coffeeStation.beginService();
+            }
+            
             updateQueueDisplays();
         } else {
             controller.visualiseCustomerExitFromPayment(customer.getPaymentType(), cashierStationNumber);
             customer.setRemovalTime(Clock.getInstance().getTime());
 
-            // Update statistics for customers exiting without coffee
             customersServed++;
             double totalTimeInSystem = customer.getRemovalTime() - customer.getArrivalTime();
             totalWaitTime += totalTimeInSystem;
@@ -302,17 +394,25 @@ public class MyEngine extends Engine {
 
     private void updateStatistics() {
         double currentTime = Clock.getInstance().getTime();
-        double simulationHours = currentTime / 3600.0; // Convert seconds to hours
+        double simulationHours = currentTime / 3600.0;
 
-        // Calculate throughput (customers per hour)
         double throughput = simulationHours > 0 ? customersServed / simulationHours : 0.0;
 
-        // Calculate average wait time (average time in system)
         double avgWaitTime = customersServed > 0 ? totalWaitTime / customersServed : 0.0;
 
-        // Update statistics display
         controller.updateStatistics(throughput, avgWaitTime, peakQueueLength, currentTime);
-
+        
+        double[] utilizationPercentages = new double[6];
+        utilizationPercentages[0] = grillStation.getUtilization(currentTime);
+        utilizationPercentages[1] = veganStation.getUtilization(currentTime);
+        utilizationPercentages[2] = normalStation.getUtilization(currentTime);
+        double cashierUtil1 = cashierStation.getUtilization(currentTime);
+        double cashierUtil2 = cashierStation2.getUtilization(currentTime);
+        utilizationPercentages[3] = (cashierUtil1 + cashierUtil2) / 2.0;
+        utilizationPercentages[4] = selfServiceStation.getUtilization(currentTime);
+        utilizationPercentages[5] = coffeeStation.getUtilization(currentTime);
+        
+        controller.updateUtilization(utilizationPercentages, currentTime);
     }
     private SimulationStatistics getStatistics() {
         double currentTime = Clock.getInstance().getTime();
@@ -331,7 +431,8 @@ public class MyEngine extends Engine {
                 throughput,
                 avgWaitTime,
                 peakQueueLength,
-                currentTime
+                currentTime,
+                customersRejected
         );
     }
 
@@ -342,30 +443,23 @@ public class MyEngine extends Engine {
         // Update queue displays periodically during simulation
         updateQueueDisplays();
     }
+    @Override
     public void pause() {
-        paused = true;
+        super.pause();
     }
 
+    @Override
     public void resumeSimulation() {
-        synchronized (pauseLock) {
-            paused = false;
-            pauseLock.notifyAll();
-        }
-    }
-    private void checkPaused() {
-        synchronized (pauseLock) {
-            while (paused) {
-                try {
-                    pauseLock.wait();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    return;
-                }
-            }
-        }
+        super.resumeSimulation();
     }
     @Override
     protected void results() {
+        for (ServicePoint sp : servicePoints) {
+            if (sp != null) {
+                sp.finalizeStatistics();
+            }
+        }
+        
         try {
             CsvExporter.export(getStatistics(), "SimulationResults.csv");
         } catch (IOException e) {
