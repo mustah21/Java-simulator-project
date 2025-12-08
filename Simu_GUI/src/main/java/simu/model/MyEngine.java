@@ -126,6 +126,8 @@ public class MyEngine extends Engine {
             }
 
             case MEAL_GRILL_DEP: {
+                if(!shouldSendToPayment())
+                    return;
                 Customer c = grillStation.removeQueue();
                 int cashierStation = routeToPayment(c);
                 controller.visualiseCustomerToPayment(c.getMealType(), c.getPaymentType(), cashierStation);
@@ -137,6 +139,8 @@ public class MyEngine extends Engine {
                 break;
             }
             case MEAL_VEGAN_DEP: {
+                if(!shouldSendToPayment())
+                    return;
                 Customer c = veganStation.removeQueue();
                 int cashierStation = routeToPayment(c);
                 controller.visualiseCustomerToPayment(c.getMealType(), c.getPaymentType(), cashierStation);
@@ -148,6 +152,8 @@ public class MyEngine extends Engine {
                 break;
             }
             case MEAL_NORMAL_DEP: {
+                if(!shouldSendToPayment())
+                    return;
                 Customer c = normalStation.removeQueue();
                 int cashierStation = routeToPayment(c);
                 controller.visualiseCustomerToPayment(c.getMealType(), c.getPaymentType(), cashierStation);
@@ -207,17 +213,22 @@ public class MyEngine extends Engine {
         }
 
     }
+    public boolean shouldSendToPayment(){
+        if(cashierStation.getQueueLength() == maxQueueCapacity && cashierStation2.getQueueLength() == maxQueueCapacity && selfServiceStation.getQueueLength() == maxQueueCapacity && coffeeStation.getQueueLength() == maxQueueCapacity) {
+            return false;
+        }
+        return true;
+    }
 
     protected int routeToPayment(Customer customer) {
         int cashierStationNumber = 0; // 0 = self-service, 1 = cashier1, 2 = cashier2
         switch (customer.getPaymentType()) {
             case SELF_SERVICE:
-                if (selfServiceStation.isEnabled()) {
+                if (selfServiceStation.isEnabled() && selfServiceStation.getQueueLength() < maxQueueCapacity) {
                     selfServiceStation.addQueue(customer);
                     cashierStationNumber = 0;
                 } else {
-                    cashierStation.addQueue(customer);
-                    cashierStationNumber = 1;
+                    cashierStationNumber = redirectToCashier(customer);
                 }
                 break;
             case CASHIER:
@@ -231,14 +242,16 @@ public class MyEngine extends Engine {
     protected int redirectToCashier(Customer customer) {
             if(cashierStation.getQueueLength()<maxQueueCapacity){
                 cashierStation.addQueue(customer);
+                customer.setPaymentType(PaymentType.CASHIER);
                 return 1;
         }
             else if (cashierStation2.getQueueLength()<maxQueueCapacity){
                 cashierStation2.addQueue(customer);
+                customer.setPaymentType(PaymentType.CASHIER);
                 return 2;
             }
             else {
-                return 1; // Default to first cashier if both are full
+                return -1; // Default to first cashier if both are full
             }
 
     }

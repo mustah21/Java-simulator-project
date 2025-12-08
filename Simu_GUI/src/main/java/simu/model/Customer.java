@@ -78,6 +78,9 @@ public class Customer {
     public PaymentType getPaymentType() {
         return paymentType;
     }
+    public void setPaymentType(PaymentType paymentType) {
+        this.paymentType = paymentType;
+    }
     /* Unchanged methods */
 
 

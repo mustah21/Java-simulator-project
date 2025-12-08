@@ -403,6 +403,9 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 	
 	@Override
 	public void visualiseCustomerToPayment(simu.model.MealType mealType, simu.model.PaymentType paymentType, int cashierStationNumber) {
+        if(cashierStationNumber == -1 ){
+            return;
+        }
 		if (ui != null) {
 			Platform.runLater(() -> ui.getVisualisation().customerToPayment(mealType, paymentType, cashierStationNumber));
 		}
