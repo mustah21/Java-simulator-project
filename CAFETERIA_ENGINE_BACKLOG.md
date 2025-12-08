@@ -77,11 +77,11 @@ This backlog outlines the implementation tasks for transforming the generic 3-st
 
 ## Epic 3: Service Points Implementation
 
-**Priority: HIGH** | **Status: Not Started**
+**Priority: HIGH** | **Status: Completed**
 
 ### 3.1 Meal Station Service Points
 
-- [ Tanvir] **Task**: Create/configure meal station service points
+- [x] [ Tanvir] **Task**: Create/configure meal station service points - **Done**
   - **Grill Station**: Configurable service time (default 45s)
   - **Vegan Station**: Configurable service time (default 40s)
   - **Normal Station**: Configurable service time (default 30s)
@@ -91,7 +91,7 @@ This backlog outlines the implementation tasks for transforming the generic 3-st
 
 ### 3.2 Payment Service Points
 
-- [Tanvir] **Task**: Implement payment stations
+- [x] [Tanvir] **Task**: Implement payment stations - **Done**
   - **Cashier Station**: Configurable service time (default 20s), always available
   - **Self-Service Station**: Configurable service time (default 12s), can be enabled/disabled
   - Customers choose based on queue length and availability
@@ -100,7 +100,7 @@ This backlog outlines the implementation tasks for transforming the generic 3-st
 
 ### 3.3 Coffee Station Service Point
 
-- [Tanvir] **Task**: Implement optional coffee station
+- [x] [Tanvir] **Task**: Implement optional coffee station - **Done**
   - Configurable service time (default 10s)
   - Can be enabled/disabled via UI
   - Only customers who want coffee visit this station
@@ -109,7 +109,7 @@ This backlog outlines the implementation tasks for transforming the generic 3-st
 
 ### 3.4 Queue Capacity Management
 
-- [ ] **Task**: Add queue capacity limits to ServicePoint
+- [x] **Task**: Add queue capacity limits to ServicePoint - **Done**
   - Extend `ServicePoint` to support max queue capacity
   - Read capacity from UI (Unlimited, 50, 100, 200)
   - Reject customers if queue is full (or route to alternative)
@@ -118,7 +118,7 @@ This backlog outlines the implementation tasks for transforming the generic 3-st
 
 ### 3.5 Service Variability Implementation
 
-- [ ] **Task**: Implement service time variability toggle
+- [x] **Task**: Implement service time variability toggle - **Done**
   - When ON: Use Normal distribution with mean and variance
   - When OFF: Use fixed service times (no randomness)
   - Apply to all service points consistently
