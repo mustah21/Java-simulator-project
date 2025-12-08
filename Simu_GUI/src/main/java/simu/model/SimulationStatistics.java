@@ -9,15 +9,13 @@ public class SimulationStatistics {
 
     private int customersServed;
     private double totalWaitTime;
-    private int rejectedCustomers;
 
 
-    public SimulationStatistics(int customersServed, double throughput, double avgWaitTime, int peakQueueLength, double currentTime, int rejectedCustomers) {
+    public SimulationStatistics(int customersServed, double throughput, double avgWaitTime, int peakQueueLength, double currentTime) {
         this.customersServed = customersServed;
         this.avgWaitTime = avgWaitTime;
         this.peakQueueLength = peakQueueLength;
         this.currentTime = currentTime;
-        this.rejectedCustomers = rejectedCustomers;
     }
 
     public void customerServed(double exitTime, double arrivalTime) {
@@ -33,13 +31,5 @@ public class SimulationStatistics {
         return customersServed > 0
                 ? totalWaitTime / customersServed
                 : 0;
-    }
-
-    public int getRejectedCustomers() {
-        return rejectedCustomers;
-    }
-
-    public double getCurrentTime() {
-        return currentTime;
     }
 }
