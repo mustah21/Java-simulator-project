@@ -13,5 +13,5 @@ public interface IControllerMtoV {
 	public void visualiseCustomerExitFromPayment(PaymentType paymentType, int cashierStationNumber);
 		public void updateQueueDisplays(int grillQueue, int veganQueue, int normalQueue,
 		                                int cashierQueue, int cashierQueue2, int selfServiceQueue, int coffeeQueue);
-	public void updateStatistics(double throughput, double avgWaitTime, int peakQueue, double simTime, int rejectedCustomers);
+	public void updateStatistics(double throughput, double avgWaitTime, int peakQueue, double simTime);
 }
