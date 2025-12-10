@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.example</groupId>
@@ -15,14 +16,51 @@
     </properties>
 
     <dependencies>
+        <!-- JavaFX -->
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
             <version>25</version>
         </dependency>
-        <dependency> <groupId>org.openjfx</groupId> <artifactId>javafx</artifactId> <version>20.0.1</version> <type>pom</type> </dependency>
-        <dependency> <groupId>org.openjfx</groupId> <artifactId>javafx-graphics</artifactId> <version>21.0.2</version> </dependency>
-        <dependency> <groupId>org.openjfx</groupId> <artifactId>javafx-fxml</artifactId> <version>20.0.1</version> </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx</artifactId>
+            <version>20.0.1</version>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-graphics</artifactId>
+            <version>21.0.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-fxml</artifactId>
+            <version>20.0.1</version>
+        </dependency>
+
+        <!-- JUnit 5 for test-->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.10.0</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
+
+    <!-- Plugin for test JUnit 5  -->
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>3.1.2</version>
+                    <configuration>
+                        <useModulePath>false</useModulePath>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 
 </project>
