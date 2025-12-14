@@ -19,7 +19,7 @@ import java.util.ResourceBundle;
  * Controller class for the cafeteria simulation GUI.
  * Implements both IControllerVtoM (view-to-model) and IControllerMtoV (model-to-view) interfaces.
  * Manages UI interactions, simulation control, and updates visualizations and statistics.
- * 
+ *
  * @author Group 8
  * @version 1.0
  */
@@ -80,7 +80,7 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 		
 		/**
 		 * Constructs a new UtilizationDataPoint.
-		 * 
+		 *
 		 * @param time Simulation time
 		 * @param queueLengths Array of queue lengths for all stations
 		 */
@@ -101,7 +101,7 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 		
 		/**
 		 * Constructs a new ChartDataPoint.
-		 * 
+		 *
 		 * @param time Simulation time
 		 * @param queueLength Total queue length
 		 */
@@ -138,7 +138,7 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 	
 	/**
 	 * Sets the UI reference for this controller.
-	 * 
+	 *
 	 * @param ui The ISimulatorUI instance
 	 */
 	public void setUI(ISimulatorUI ui) {
@@ -147,7 +147,7 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 	
 	/**
 	 * Gets the simulation canvas pane.
-	 * 
+	 *
 	 * @return The Pane used for simulation visualization
 	 */
 	public Pane getSimulationCanvas() {
@@ -157,7 +157,7 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 	/**
 	 * Initializes the controller after FXML loading.
 	 * Sets up event handlers for UI controls and initializes charts.
-	 * 
+	 *
 	 * @param location The location used to resolve relative paths for the root object
 	 * @param resources The resources used to localize the root object
 	 */
@@ -336,7 +336,7 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 	/**
 	 * Parses a double value from a TextField.
 	 * Returns the default value if parsing fails or field is empty.
-	 * 
+	 *
 	 * @param field The TextField to parse
 	 * @param defaultValue The default value to return if parsing fails
 	 * @return The parsed double value or default value
@@ -401,6 +401,19 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 		if (utilChart != null) {
 			utilChart.getData().clear();
 		}
+
+		if (openingHoursField != null) openingHoursField.setText("3.0");
+		if (arrivalSlider != null) arrivalSlider.setValue(120.0);
+		if (grillTime != null) grillTime.setText("45.0");
+		if (veganTime != null) veganTime.setText("40.0");
+		if (normalTime != null) normalTime.setText("30.0");
+		if (cashierTime != null) cashierTime.setText("20.0");
+		if (selfServiceTime != null) selfServiceTime.setText("12.0");
+		if (coffeeTime != null) coffeeTime.setText("10.0");
+		if (enableSelfService != null) enableSelfService.setSelected(true);
+		if (coffeeOptional != null) coffeeOptional.setSelected(true);
+		if (queueCapacity != null) queueCapacity.setValue("Unlimited");
+		if (variabilityToggle != null) variabilityToggle.setSelected(false);
 	}
 	
 	/**
@@ -453,7 +466,7 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 	/**
 	 * Shows the simulation end time and displays completion popup.
 	 * Updates charts with final data. Must be called on JavaFX thread.
-	 * 
+	 *
 	 * @param time The simulation end time in seconds
 	 */
 	@Override
@@ -470,7 +483,7 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 	
 	/**
 	 * Displays a popup dialog when simulation completes.
-	 * 
+	 *
 	 * @param endTime The simulation end time in seconds
 	 */
 	private void showSimulationEndPopup(double endTime) {
@@ -491,7 +504,7 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 
 	/**
 	 * Visualizes a new customer arriving at a meal station.
-	 * 
+	 *
 	 * @param mealType The type of meal the customer wants
 	 */
 	@Override
@@ -503,7 +516,7 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 	
 	/**
 	 * Visualizes a customer moving from meal station to payment station.
-	 * 
+	 *
 	 * @param mealType The customer's meal type
 	 * @param paymentType The payment method (SELF_SERVICE or CASHIER)
 	 * @param cashierStationNumber The cashier station number (0=self-service, 1=cashier1, 2=cashier2)
@@ -517,7 +530,7 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 	
 	/**
 	 * Visualizes a customer moving from payment station to coffee station.
-	 * 
+	 *
 	 * @param paymentType The payment method used
 	 * @param cashierStationNumber The cashier station number (0=self-service, 1=cashier1, 2=cashier2)
 	 */
@@ -540,7 +553,7 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 	
 	/**
 	 * Visualizes a customer exiting from a payment station (without coffee).
-	 * 
+	 *
 	 * @param paymentType The payment method used
 	 * @param cashierStationNumber The cashier station number (0=self-service, 1=cashier1, 2=cashier2)
 	 */
@@ -554,7 +567,7 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 	/**
 	 * Updates queue length displays for all service points.
 	 * Updates progress bars, labels, and collects data for charts.
-	 * 
+	 *
 	 * @param grillQueue Queue length at grill station
 	 * @param veganQueue Queue length at vegan station
 	 * @param normalQueue Queue length at normal station
@@ -610,7 +623,7 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 	/**
 	 * Collects chart data during simulation without updating the display.
 	 * Data is stored and displayed only when simulation ends.
-	 * 
+	 *
 	 * @param grillQueue Queue length at grill station
 	 * @param veganQueue Queue length at vegan station
 	 * @param normalQueue Queue length at normal station
@@ -632,8 +645,16 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 		if (currentTime != lastCollectionTime) {
 			queueHistory.add(new ChartDataPoint(currentTime, totalQueue));
 			
-			// Also collect utilization data (queue lengths for each station)
-			// Combine both cashier queues for utilization chart (using average or sum)
+			if (queueChart != null && totalQueueSeries != null) {
+				Platform.runLater(() -> {
+					totalQueueSeries.getData().add(new XYChart.Data<>(currentTime, totalQueue));
+
+					if (totalQueueSeries.getData().size() > 1000) {
+						totalQueueSeries.getData().remove(0);
+					}
+				});
+			}
+
 			int combinedCashierQueue = cashierQueue + cashierQueue2;
 			int[] queueLengths = new int[]{grillQueue, veganQueue, normalQueue, combinedCashierQueue, selfServiceQueue, coffeeQueue};
 			utilizationHistory.add(new UtilizationDataPoint(currentTime, queueLengths));
@@ -699,7 +720,7 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 	
 	/**
 	 * Updates statistics displays with current simulation metrics.
-	 * 
+	 *
 	 * @param throughput Throughput in customers per hour
 	 * @param avgWaitTime Average wait time in seconds
 	 * @param peakQueue Peak queue length observed
@@ -737,11 +758,31 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 	/**
 	 * Updates a progress bar to reflect queue length.
 	 * Sets progress value and color based on capacity percentage.
-	 * 
+	 *
 	 * @param progressBar The progress bar to update
 	 * @param queueLength Current queue length
 	 * @param maxCapacity Maximum capacity for visualization
 	 */
+	@Override
+	public void updateUtilization(double[] utilizationPercentages, double simTime) {
+		Platform.runLater(() -> {
+			if (utilChart != null && utilizationPercentages != null && utilizationPercentages.length >= 6) {
+				utilChart.getData().clear();
+
+				XYChart.Series<String, Number> series = new XYChart.Series<>();
+
+				series.getData().add(new XYChart.Data<>("Grill", Math.min(100.0, utilizationPercentages[0])));
+				series.getData().add(new XYChart.Data<>("Vegan", Math.min(100.0, utilizationPercentages[1])));
+				series.getData().add(new XYChart.Data<>("Normal", Math.min(100.0, utilizationPercentages[2])));
+				series.getData().add(new XYChart.Data<>("Cashier", Math.min(100.0, utilizationPercentages[3])));
+				series.getData().add(new XYChart.Data<>("Self-Svc", Math.min(100.0, utilizationPercentages[4])));
+				series.getData().add(new XYChart.Data<>("Coffee", Math.min(100.0, utilizationPercentages[5])));
+
+				utilChart.getData().add(series);
+			}
+		});
+	}
+
 	private void updateProgressBar(javafx.scene.control.ProgressBar progressBar, int queueLength, double maxCapacity) {
 		if (progressBar == null) return;
 		
