@@ -8,7 +8,7 @@ This backlog outlines the implementation tasks for transforming the generic 3-st
 
 ## Epic 1: Core Infrastructure & Event System
 
-**Priority: HIGH** | **Status: Completed**
+**Priority: HIGH** | **Status: Not Started**
 
 ### 1.1 Extend Event Types 
 
@@ -77,11 +77,11 @@ This backlog outlines the implementation tasks for transforming the generic 3-st
 
 ## Epic 3: Service Points Implementation
 
-**Priority: HIGH** | **Status: Completed**
+**Priority: HIGH** | **Status: COMPLETED**
 
 ### 3.1 Meal Station Service Points
 
-- [ Tanvir] **Task**: Create/configure meal station service points
+- [x] [Tanvir] **Task**: Create/configure meal station service points
   - **Grill Station**: Configurable service time (default 45s)
   - **Vegan Station**: Configurable service time (default 40s)
   - **Normal Station**: Configurable service time (default 30s)
@@ -91,7 +91,7 @@ This backlog outlines the implementation tasks for transforming the generic 3-st
 
 ### 3.2 Payment Service Points
 
-- [Tanvir] **Task**: Implement payment stations
+- [x] [Tanvir] **Task**: Implement payment stations
   - **Cashier Station**: Configurable service time (default 20s), always available
   - **Self-Service Station**: Configurable service time (default 12s), can be enabled/disabled
   - Customers choose based on queue length and availability
@@ -100,7 +100,7 @@ This backlog outlines the implementation tasks for transforming the generic 3-st
 
 ### 3.3 Coffee Station Service Point
 
-- [Tanvir] **Task**: Implement optional coffee station
+- [x] [Tanvir] **Task**: Implement optional coffee station
   - Configurable service time (default 10s)
   - Can be enabled/disabled via UI
   - Only customers who want coffee visit this station
@@ -109,7 +109,7 @@ This backlog outlines the implementation tasks for transforming the generic 3-st
 
 ### 3.4 Queue Capacity Management
 
-- [ ] **Task**: Add queue capacity limits to ServicePoint
+- [x] [Tanvir] **Task**: Add queue capacity limits to ServicePoint
   - Extend `ServicePoint` to support max queue capacity
   - Read capacity from UI (Unlimited, 50, 100, 200)
   - Reject customers if queue is full (or route to alternative)
@@ -118,7 +118,7 @@ This backlog outlines the implementation tasks for transforming the generic 3-st
 
 ### 3.5 Service Variability Implementation
 
-- [ ] **Task**: Implement service time variability toggle
+- [x] [Tanvir] **Task**: Implement service time variability toggle
   - When ON: Use Normal distribution with mean and variance
   - When OFF: Use fixed service times (no randomness)
   - Apply to all service points consistently
@@ -128,11 +128,11 @@ This backlog outlines the implementation tasks for transforming the generic 3-st
 
 ## Epic 4: Statistics & Metrics Collection
 
-**Priority: MEDIUM** | **Status: Completed**
+**Priority: MEDIUM** | **Status: COMPLETED**
 
 ### 4.1 Service Point Statistics
 
-- [ ] **Task**: Add statistics tracking to `ServicePoint.java`
+- [x] [Tanvir] **Task**: Add statistics tracking to `ServicePoint.java` - **COMPLETED by Tanvir**
   - Total customers served
   - Total busy time (utilization)
   - Average queue length
@@ -143,7 +143,7 @@ This backlog outlines the implementation tasks for transforming the generic 3-st
 
 ### 4.2 Customer-Level Statistics
 
-- [ ] **Task**: Track customer journey statistics
+- [x] [Tanvir] **Task**: Track customer journey statistics - **COMPLETED by Tanvir**
   - Total time in system (arrival to exit)
   - Time at each station (wait + service)
   - Number of customers served
@@ -152,7 +152,7 @@ This backlog outlines the implementation tasks for transforming the generic 3-st
 
 ### 4.3 System-Level Metrics
 
-- [ ] **Task**: Calculate overall system metrics
+- [x] [Tanvir] **Task**: Calculate overall system metrics - **COMPLETED by Tanvir**
   - **Throughput**: Customers per hour (customers served / simulation hours)
   - **Average Wait Time**: Average time customers wait across all stations
   - **Peak Queue**: Maximum queue length across all stations
@@ -161,7 +161,7 @@ This backlog outlines the implementation tasks for transforming the generic 3-st
 
 ### 4.4 Real-Time Statistics Updates
 
-- [ ] **Task**: Update statistics during simulation
+- [x] [Tanvir] **Task**: Update statistics during simulation - **COMPLETED by Tanvir**
   - Calculate metrics incrementally as events occur
   - Update UI labels in real-time (throughputLabel, avgWaitLabel, etc.)
   - Update charts (queueChart, utilChart) periodically
@@ -171,7 +171,7 @@ This backlog outlines the implementation tasks for transforming the generic 3-st
 
 ## Epic 5: UI Integration
 
-**Priority: MEDIUM** | **Completed**
+**Priority: MEDIUM** | **Status: In Progress**
 
 ### 5.1 Connect UI Inputs to Engine
 
@@ -241,7 +241,7 @@ This backlog outlines the implementation tasks for transforming the generic 3-st
 
 ## Epic 6: Visualization
 
-**Priority: LOW** | **Status: Completed**
+**Priority: LOW** | **Status: Not Started**
 
 ### 6.1 Basic Canvas Visualization
 
@@ -272,7 +272,7 @@ This backlog outlines the implementation tasks for transforming the generic 3-st
 
 ## Epic 7: Advanced Features
 
-**Priority: LOW** | **Status: Completed**
+**Priority: LOW** | **Status: Not Started**
 
 ### 7.1 Multiple Cashiers Support
 
@@ -309,7 +309,7 @@ This backlog outlines the implementation tasks for transforming the generic 3-st
 
 ## Epic 8: Testing & Validation
 
-**Priority: priority** | **Status: priority**
+**Priority: MEDIUM** | **Status: Not Started**
 
 ### 8.1 Unit Tests - Service Points
 

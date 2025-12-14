@@ -14,4 +14,5 @@ public interface IControllerMtoV {
 		public void updateQueueDisplays(int grillQueue, int veganQueue, int normalQueue,
 		                                int cashierQueue, int cashierQueue2, int selfServiceQueue, int coffeeQueue);
 	public void updateStatistics(double throughput, double avgWaitTime, int peakQueue, double simTime);
+	public void updateUtilization(double[] utilizationPercentages, double simTime);
 }
