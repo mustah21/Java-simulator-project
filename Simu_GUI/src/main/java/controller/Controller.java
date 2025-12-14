@@ -6,8 +6,12 @@ import javafx.fxml.Initializable;
 import javafx.scene.chart.*;
 import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
+import simu.framework.Clock;
 import simu.framework.IEngine;
+import simu.model.Customer;
+import simu.model.MealType;
 import simu.model.MyEngine;
+import simu.model.PaymentType;
 import view.ISimulatorUI;
 
 import java.net.URL;
@@ -112,13 +116,13 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 	}
 	
 	// Queue progress bars
-	@FXML private javafx.scene.control.ProgressBar veganQueueProgress;
-	@FXML private javafx.scene.control.ProgressBar normalQueueProgress;
-	@FXML private javafx.scene.control.ProgressBar grillQueueProgress;
-	@FXML private javafx.scene.control.ProgressBar selfServiceQueueProgress;
-	@FXML private javafx.scene.control.ProgressBar cashierQueueProgress;
-	@FXML private javafx.scene.control.ProgressBar cashierQueueProgress2;
-	@FXML private javafx.scene.control.ProgressBar coffeeQueueProgress;
+	@FXML private ProgressBar veganQueueProgress;
+	@FXML private ProgressBar normalQueueProgress;
+	@FXML private ProgressBar grillQueueProgress;
+	@FXML private ProgressBar selfServiceQueueProgress;
+	@FXML private ProgressBar cashierQueueProgress;
+	@FXML private ProgressBar cashierQueueProgress2;
+	@FXML private ProgressBar coffeeQueueProgress;
 	
 	// Queue labels
 	@FXML private Label veganQueueLabel;
@@ -370,10 +374,10 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 		engine = null;
 		
 		// Reset Clock to 0
-		simu.framework.Clock.getInstance().reset();
+		Clock.getInstance().reset();
 		
 		// Reset Customer static counters
-		simu.model.Customer.reset();
+		Customer.reset();
 		
 		// Clear visualization
 		if (ui != null && ui.getVisualisation() != null) {
@@ -508,7 +512,7 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 	 * @param mealType The type of meal the customer wants
 	 */
 	@Override
-	public void visualiseCustomer(simu.model.MealType mealType) {
+	public void visualiseCustomer(MealType mealType) {
 		if (ui != null) {
 			Platform.runLater(() -> ui.getVisualisation().newCustomer(mealType));
 		}
@@ -522,7 +526,7 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 	 * @param cashierStationNumber The cashier station number (0=self-service, 1=cashier1, 2=cashier2)
 	 */
 	@Override
-	public void visualiseCustomerToPayment(simu.model.MealType mealType, simu.model.PaymentType paymentType, int cashierStationNumber) {
+	public void visualiseCustomerToPayment(MealType mealType, PaymentType paymentType, int cashierStationNumber) {
         if(cashierStationNumber == -1 ){
             return;
         }
@@ -538,7 +542,7 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 	 * @param cashierStationNumber The cashier station number (0=self-service, 1=cashier1, 2=cashier2)
 	 */
 	@Override
-	public void visualiseCustomerToCoffee(simu.model.PaymentType paymentType, int cashierStationNumber) {
+	public void visualiseCustomerToCoffee(PaymentType paymentType, int cashierStationNumber) {
 		if (ui != null) {
 			Platform.runLater(() -> ui.getVisualisation().customerToCoffee(paymentType, cashierStationNumber));
 		}
@@ -561,7 +565,7 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 	 * @param cashierStationNumber The cashier station number (0=self-service, 1=cashier1, 2=cashier2)
 	 */
 	@Override
-	public void visualiseCustomerExitFromPayment(simu.model.PaymentType paymentType, int cashierStationNumber) {
+	public void visualiseCustomerExitFromPayment(PaymentType paymentType, int cashierStationNumber) {
 		if (ui != null) {
 			Platform.runLater(() -> ui.getVisualisation().customerExitFromPayment(paymentType, cashierStationNumber));
 		}
@@ -638,7 +642,7 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 	private void collectChartData(int grillQueue, int veganQueue, int normalQueue,
 	                              int cashierQueue, int cashierQueue2, int selfServiceQueue, int coffeeQueue) {
 		// Get current simulation time (in seconds)
-		double currentTime = simu.framework.Clock.getInstance().getTime();
+		double currentTime = Clock.getInstance().getTime();
 		
 		// Calculate total queue length (combine both cashier queues for total)
 		int totalQueue = grillQueue + veganQueue + normalQueue + cashierQueue + cashierQueue2 + selfServiceQueue + coffeeQueue;
@@ -761,10 +765,8 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 	/**
 	 * Updates a progress bar to reflect queue length.
 	 * Sets progress value and color based on capacity percentage.
-	 *
-	 * @param progressBar The progress bar to update
-	 * @param queueLength Current queue length
-	 * @param maxCapacity Maximum capacity for visualization
+     * @param utilizationPercentages
+     * @param simTime
 	 */
 	@Override
 	public void updateUtilization(double[] utilizationPercentages, double simTime) {
@@ -786,7 +788,7 @@ public class Controller implements IControllerVtoM, IControllerMtoV, Initializab
 		});
 	}
 
-	private void updateProgressBar(javafx.scene.control.ProgressBar progressBar, int queueLength, double maxCapacity) {
+	private void updateProgressBar(ProgressBar progressBar, int queueLength, double maxCapacity) {
 		if (progressBar == null) return;
 		
 		// Ensure progress is calculated correctly, accounting for customers being served
