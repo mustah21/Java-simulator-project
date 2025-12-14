@@ -181,6 +181,8 @@ public class MyEngine extends Engine {
             }
 
             case MEAL_GRILL_DEP: {
+                if(!shouldSendToPayment())
+                    return;
                 double serviceEndTime = Clock.getInstance().getTime();
                 Customer c = grillStation.removeQueue();
 
@@ -199,6 +201,8 @@ public class MyEngine extends Engine {
                 break;
             }
             case MEAL_VEGAN_DEP: {
+                if(!shouldSendToPayment())
+                    return;
                 double serviceEndTime = Clock.getInstance().getTime();
                 Customer c = veganStation.removeQueue();
 
@@ -218,6 +222,8 @@ public class MyEngine extends Engine {
                 break;
             }
             case MEAL_NORMAL_DEP: {
+                if(!shouldSendToPayment())
+                    return;
                 double serviceEndTime = Clock.getInstance().getTime();
                 Customer c = normalStation.removeQueue();
 
@@ -313,6 +319,12 @@ public class MyEngine extends Engine {
         }
 
     }
+    public boolean shouldSendToPayment(){
+        if(cashierStation.getQueueLength() == maxQueueCapacity && cashierStation2.getQueueLength() == maxQueueCapacity && selfServiceStation.getQueueLength() == maxQueueCapacity && coffeeStation.getQueueLength() == maxQueueCapacity) {
+            return false;
+        }
+        return true;
+    }
 
     /**
      * Routes a customer to the appropriate payment station based on their payment type.
@@ -328,7 +340,7 @@ public class MyEngine extends Engine {
 
         switch (customer.getPaymentType()) {
             case SELF_SERVICE:
-                if (selfServiceStation.isEnabled()) {
+                if (selfServiceStation.isEnabled() && selfServiceStation.getQueueLength() < maxQueueCapacity) {
                     selfServiceStation.addQueue(customer);
                     paymentStation = selfServiceStation;
                     cashierStationNumber = 0;
@@ -337,6 +349,7 @@ public class MyEngine extends Engine {
                         selfServiceStation.beginService();
                     }
                 } else {
+                    cashierStationNumber = redirectToCashier(customer);
                     cashierStation.addQueue(customer);
                     paymentStation = cashierStation;
                     cashierStationNumber = 1;
