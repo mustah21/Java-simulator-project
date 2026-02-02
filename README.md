@@ -1,4 +1,8 @@
+
+
+
 # Cafeteria Simulation Engine
+<img width="1534" height="1012" alt="Screenshot 2026-02-02 093238" src="https://github.com/user-attachments/assets/d6b2de40-68d3-4efa-af17-d3dc7a009e5f" />
 
 A Java-based discrete event simulation system for modeling and analyzing cafeteria operations with a graphical user interface.
 
