@@ -186,6 +186,6 @@ Potential features for future development:
 - Real-time data integration
 - Enhanced visualization options
 
----
 
-**Note**: This simulation engine is designed for educational and analytical purposes to understand cafeteria operations and optimization strategies.
+---
+_This readme has primarily been written by Claude. The code itself has entirely been written by the owner. Nonetheless the the final responsibility for the documentation and its correctness resides with the owner._
